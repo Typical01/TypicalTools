@@ -1,0 +1,24 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "TypicalTool",
+	"Description": "Typical01 Tool",
+	"Category": "Other",
+	"CreatedBy": "Typical01",
+	"CreatedByURL": "",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "",
+	"CanContainContent": true,
+	"IsBetaVersion": false,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "TypicalTool",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	]
+}
