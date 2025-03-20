@@ -53,7 +53,6 @@
 #include <commctrl.h>
 #include <tchar.h>
 #include <Windows.h>
-#include <winreg.h>
 #include <TlHelp32.h>
 #endif
 

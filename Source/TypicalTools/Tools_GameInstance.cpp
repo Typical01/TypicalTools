@@ -22,9 +22,10 @@ void UTools_GameInstance::OnStart()
     UEtytl::SetWindowResolution(200, 80, EWindowMode::ConvertIntToWindowMode(2));
 
     if (MainMenuWidget) {
-        DialogWindowMain = CreateToolDialog(MainMenuWidget, DialogTitleName, WindowWidth, WindowHeight);
         USettingWidget* SettingWidget = Cast<USettingWidget>(MainMenuWidget);
         SettingWidget->Tools_GameInstance = this;
+
+        DialogWindowMain = CreateToolDialog(MainMenuWidget, DialogTitleName, WindowWidth, WindowHeight);
     }
     else {
         UEtytl::DebugLog(FString::Printf(TEXT("UTools_GameInstance::OnStart(): 无效的 UMG!")));
@@ -41,6 +42,14 @@ void UTools_GameInstance::OnStart()
                 UEtytl::DebugLog(FString::Printf(TEXT("UTools_GameInstance::UTools_GameInstance(): Json格式错误!")));
             }
         }
+        else {
+            UEtytl::DebugLog(FString::Printf(TEXT("UTools_GameInstance::UTools_GameInstance(): 配置文件读取成功!")), FColor::Yellow);
+        }
+    }
+
+    if (MainMenuWidget) {
+        USettingWidget* SettingWidget = Cast<USettingWidget>(MainMenuWidget);
+        SettingWidget->LoadSettingConfigFile();
     }
 
     CreateTrayIcon();
@@ -56,12 +65,10 @@ void UTools_GameInstance::HideDialogWindow()
 
 void UTools_GameInstance::DestroyDialogWindow()
 {
-    if (DialogWindowMain) {
-        DestroyWindow(DialogWindowMain.ToSharedRef());
-    }
     // 重置 Slate 指针以释放资源
     if (DialogWindowMain.IsValid())
     {
+        DialogWindowMain->RequestDestroyWindow();
         DialogWindowMain.Reset();
     }
 
@@ -120,6 +127,21 @@ void UTools_GameInstance::CreateConfigFile()
     }
 }
 
+void UTools_GameInstance::SaveConfigFile()
+{
+    FString ErrorMessage;
+    if (!UEtytl::WriteJsonFile(*FPaths::Combine(FPaths::ProjectContentDir(), TEXT("Config/Config.json")), ToolsConfig, ErrorMessage)) {
+        if (ErrorMessage.Equals(TEXT("文件错误"))) { //没有文件
+            UEtytl::DebugLog(FString::Printf(TEXT("UTools_GameInstance::CreateConfigFile(): 写入文件[Config.json]错误!")));
+        }
+        else if (ErrorMessage.Equals(TEXT("非文件错误"))) { //Json格式错误
+            UEtytl::DebugLog(FString::Printf(TEXT("UTools_GameInstance::CreateConfigFile(): Json格式错误!")));
+        }
+    }
+    else {
+        UEtytl::DebugLog(FString::Printf(TEXT("UTools_GameInstance::CreateConfigFile(): 文件创建成功!")), FColor::Yellow);
+    }
+}
 
 void UTools_GameInstance::CreateTrayIcon()
 {

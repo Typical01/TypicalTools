@@ -19,6 +19,7 @@ UTools_GameInstance* UTrayManager::Tools_GameInstance = nullptr;
 UToolsMain* UTrayManager::ToolsMain = nullptr;
 NOTIFYICONDATA UTrayManager::nid = {};
 HWND UTrayManager::hWnd = nullptr;
+HMENU UTrayManager::hMenu = nullptr;
 
 int UTrayManager::ID_Quit = tytl::Win::WindowHost::GetHMENU(); //退出
 int UTrayManager::ID_ToolsConfig = tytl::Win::WindowHost::GetHMENU(); //工具箱配置
@@ -64,24 +65,59 @@ void UTrayManager::CreateTrayIcon()
     // 替换窗口消息处理函数
     SetWindowLongPtr(hWnd, GWLP_WNDPROC, (LONG_PTR)&WndProc);
 
+    ToolsMain = NewObject<UToolsMain>();
+
     if (Tools_GameInstance) {
         Tools_GameInstance->DialogWindowMain->HideWindow();
+        ToolsMain->SettingWidget = Cast<USettingWidget>(Tools_GameInstance->MainMenuWidget);
+    }
+    else {
+        UEtytl::DebugLog(FString::Printf(TEXT("UTrayManager::CreateTrayIcon: Tools_GameInstance 无效!")));
     }
 
-    ToolsMain = NewObject<UToolsMain>();
-    ToolsMain->SettingWidget = SettingWidget;
+    if (SettingWidget) {
+        SettingWidget->ToolsMain = ToolsMain;
+    }
+    else {
+        UEtytl::DebugLog(FString::Printf(TEXT("UTrayManager::CreateTrayIcon: SettingWidget 无效!")));
+    }
+
+
+    if (ToolsMain) {
+        ToolsMain->LoadShellConfig();
+
+        // 创建右键菜单
+        hMenu = CreatePopupMenu();
+        ToolsMain->hMenu = hMenu;
+        ToolsMain->ID_Quit = ID_Quit;
+        ToolsMain->ID_ToolsConfig = ID_ToolsConfig;
+        ToolsMain->ID_SetScreenResolution = ID_SetScreenResolution;
+
+        //为Menu添加选项
+        ToolsMain->LoadToolsMenu();
+
+        ToolsMain->WindowShell.ExeRunItemShell();
+    }
+    else {
+        UEtytl::DebugLog(FString::Printf(TEXT("UTrayManager::CreateTrayIcon: Shell 配置加载错误!")));
+    }
 }
 
 void UTrayManager::RemoveTrayIcon()
 {
     // 移除托盘图标
     Shell_NotifyIcon(NIM_DELETE, &nid);
+    DestroyMenu(hMenu);
     SettingWidget = nullptr;
     Tools_GameInstance = nullptr;
 }
 
 void UTrayManager::SelectMenu(int MenuItemID)
 {
+    UEtytl::DebugLog(FString::Printf(TEXT("UTrayManager::SelectMenu(): ")));
+    UEtytl::DebugLog(FString::Printf(TEXT("UTrayManager::SelectMenu(): ")));
+    UEtytl::DebugLog(FString::Printf(TEXT("UTrayManager::SelectMenu(): ")));
+    UEtytl::DebugLog(FString::Printf(TEXT("UTrayManager::SelectMenu(): ")));
     UEtytl::DebugLog(FString::Printf(TEXT("UTrayManager::SelectMenu(): 选择[%d]"), MenuItemID));
     UEtytl::DebugLog(FString::Printf(TEXT("UTrayManager::SelectMenu(): 退出[%d]"), ID_Quit));
     UEtytl::DebugLog(FString::Printf(TEXT("UTrayManager::SelectMenu(): 设置[%d]"), ID_ToolsConfig));
@@ -110,7 +146,7 @@ void UTrayManager::SelectMenu(int MenuItemID)
                 Win::SetDisplaySize(BeginResolutionWidth, BeginResolutionHeight);
                 bSetScreenResolution = false;
 
-                UEtytl::DebugLog(FString::Printf(TEXT("屏幕分辨率修改成功:\n[%d] x [%d]"), BeginResolutionWidth, BeginResolutionHeight));
+                UEtytl::DebugLog(FString::Printf(TEXT("UTrayManager::SelectMenu: 屏幕分辨率修改成功: [%d] x [%d]"), BeginResolutionWidth, BeginResolutionHeight));
             }
         }
         else
@@ -122,7 +158,7 @@ void UTrayManager::SelectMenu(int MenuItemID)
                 Win::SetDisplaySize(TargetResolutionWidth, TargetResolutionHeight);
                 bSetScreenResolution = true;
 
-                UEtytl::DebugLog(FString::Printf(TEXT("屏幕分辨率修改成功:\n[%d] x [%d]"), TargetResolutionWidth, TargetResolutionHeight));
+                UEtytl::DebugLog(FString::Printf(TEXT("UTrayManager::SelectMenu: 屏幕分辨率修改成功: [%d] x [%d]"), TargetResolutionWidth, TargetResolutionHeight));
             }
         }
     }
@@ -133,18 +169,6 @@ void UTrayManager::SelectMenu(int MenuItemID)
 
 void UTrayManager::ShowContextMenu(HWND _hWnd)
 {
-    // 创建右键菜单
-    HMENU hMenu = CreatePopupMenu();
-
-
-    //为Menu添加选项
-    ToolsMain->LoadToolsMenu(hMenu);
-    AppendMenu(hMenu, MF_SEPARATOR, NULL, TEXT("分割线"));
-    AppendMenu(hMenu, MF_STRING, ID_SetScreenResolution, TEXT("修改屏幕分辨率"));
-    AppendMenu(hMenu, MF_SEPARATOR, NULL, TEXT("分割线"));
-    AppendMenu(hMenu, MF_STRING, ID_ToolsConfig, TEXT("设置"));
-    AppendMenu(hMenu, MF_STRING, ID_Quit, TEXT("退出"));
-
     // 获取鼠标位置
     POINT pt;
     GetCursorPos(&pt);
@@ -152,8 +176,6 @@ void UTrayManager::ShowContextMenu(HWND _hWnd)
     SetForegroundWindow(_hWnd);
     //选择的菜单ID
     SelectMenu(TrackPopupMenu(hMenu, TPM_RIGHTBUTTON | TPM_RETURNCMD, pt.x, pt.y, 0, _hWnd, NULL)); //获取用户选择的菜单项的标识符
-
-    DestroyMenu(hMenu);
 }
 
 LRESULT CALLBACK UTrayManager::WndProc(HWND _hWnd, UINT message, WPARAM wParam, LPARAM lParam)

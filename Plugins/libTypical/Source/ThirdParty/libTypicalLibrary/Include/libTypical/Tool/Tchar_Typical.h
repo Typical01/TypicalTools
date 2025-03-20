@@ -32,13 +32,13 @@ namespace Typical_Tool {
 
 
 
-#ifndef Tx
+#ifndef TEXT
 #ifndef UNICODE
 	// ""
-#define Tx(x) x
+#define TEXT(x) x
 #else
 	// L""
-#define Tx(x) L ## x
+#define TEXT(x) L ## x
 #endif
 #endif
 
@@ -83,9 +83,9 @@ namespace Typical_Tool {
 #define _LOGERRORINFO(x) (x)
 #else
 #ifndef UNICODE
-#define _LOGERRORINFO(x) (Tstr)Tx("[") + __FILE__ + Tx("->") + ToStr(__LINE__)+ Tx("]") + x
+#define _LOGERRORINFO(x) (Tstr)TEXT("[") + __FILE__ + TEXT("->") + ToStr(__LINE__)+ TEXT("]") + x
 #else
-#define _LOGERRORINFO(x) (Tstr)Tx("[") + stow(__FILE__) + Tx("->") + ToStr(__LINE__)+ Tx("]") + x
+#define _LOGERRORINFO(x) (Tstr)TEXT("[") + stow(__FILE__) + TEXT("->") + ToStr(__LINE__)+ TEXT("]") + x
 #endif
 #endif
 
@@ -93,16 +93,16 @@ namespace Typical_Tool {
 //控制台字符颜色
 #define _ANSIESC_CONSOLE_CHAR_COLOR
 #ifdef _ANSIESC_CONSOLE_CHAR_COLOR
-#define ANSIESC_RESET Tx("\033[0m")
-#define ANSIESC_GREEN Tx("\033[32m")
-#define ANSIESC_YELLOW Tx("\033[33m")
-#define ANSIESC_RED Tx("\033[31m")
+#define ANSIESC_RESET TEXT("\033[0m")
+#define ANSIESC_GREEN TEXT("\033[32m")
+#define ANSIESC_YELLOW TEXT("\033[33m")
+#define ANSIESC_RED TEXT("\033[31m")
 
 #else
-#define ANSIESC_RESET Tx("")
-#define ANSIESC_GREEN Tx("")
-#define ANSIESC_YELLOW Tx("")
-#define ANSIESC_RED Tx("")
+#define ANSIESC_RESET TEXT("")
+#define ANSIESC_GREEN TEXT("")
+#define ANSIESC_YELLOW TEXT("")
+#define ANSIESC_RED TEXT("")
 #endif
 
 
@@ -115,23 +115,23 @@ namespace Typical_Tool {
 
 
 #ifdef _WINDOWS
-#define PATH_SLASH Tx("\\")
+#define PATH_SLASH TEXT("\\")
 
 #else
-#define PATH_SLASH Tx("/")
+#define PATH_SLASH TEXT("/")
 #endif
 
 
-#define Log_Tips	Tx("[INFO]    ")
-#define Log_Warning Tx("[WARNING] ")
-#define Log_Error	Tx("[ERROR]   ")
-#define Log_Text	Tx("[TEXT]    ")
-#define Log_Tab		Tx("          ")
-#define Log_LineFeed Tx("\n")
+#define Log_Tips	TEXT("[INFO]    ")
+#define Log_Warning TEXT("[WARNING] ")
+#define Log_Error	TEXT("[ERROR]   ")
+#define Log_Text	TEXT("[TEXT]    ")
+#define Log_Tab		TEXT("          ")
+#define Log_LineFeed TEXT("\n")
 
 
-#define _Bracket(x) (Tstr)Tx("[") + x + Tx("]")
-#define _Brace(x) (Tstr)Tx("{") + x + Tx("}")
+#define _Bracket(x) (Tstr)TEXT("[") + x + TEXT("]")
+#define _Brace(x) (Tstr)TEXT("{") + x + TEXT("}")
 
 
 #ifndef UNICODE

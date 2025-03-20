@@ -22,6 +22,7 @@ class TYPICALTOOLS_API USettingWidget : public UUserWidget
 
 public:
 	class UTools_GameInstance* Tools_GameInstance;
+	class UToolsMain* ToolsMain;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 	UListView* ListViewShellConfig; //列表视图

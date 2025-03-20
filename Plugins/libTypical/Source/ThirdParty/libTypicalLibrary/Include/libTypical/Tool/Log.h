@@ -30,9 +30,9 @@ namespace Typical_Tool
 
 	public:
 		LogStringBuffer()
-			: AnsiEsc_Color(Tx("")), TimeStr(Tx("")), _Text(Tx("")), AnsiEsc_Reset(Tx("")) { }
+			: AnsiEsc_Color(TEXT("")), TimeStr(TEXT("")), _Text(TEXT("")), AnsiEsc_Reset(TEXT("")) { }
 		LogStringBuffer(const Tstr& AnsiEsc_Color, const Tstr& _Text, const Tstr& AnsiEsc_Reset)
-			: AnsiEsc_Color(AnsiEsc_Color), TimeStr(Tx("")), _Text(_Text), AnsiEsc_Reset(AnsiEsc_Reset) { }
+			: AnsiEsc_Color(AnsiEsc_Color), TimeStr(TEXT("")), _Text(_Text), AnsiEsc_Reset(AnsiEsc_Reset) { }
 		LogStringBuffer(const Tstr& AnsiEsc_Color, const Tstr& TimeStr, const Tstr& _Text, const Tstr& AnsiEsc_Reset)
 			: AnsiEsc_Color(AnsiEsc_Color), TimeStr(TimeStr), _Text(_Text), AnsiEsc_Reset(AnsiEsc_Reset) { }
 	};
@@ -66,7 +66,7 @@ namespace Typical_Tool
 		template<typename T, typename... Args>
 		static Tstr format_impl(std::vector<Tstr>& placeholders, T first, Args... args) {
 			Tstr formatted_string = placeholders[0];
-			size_t pos = formatted_string.find(Tx('%')); // 查找第一个占位符
+			size_t pos = formatted_string.find(TEXT('%')); // 查找第一个占位符
 
 			if (pos != Tstr::npos) {
 				Tostringstream oss;
@@ -166,15 +166,15 @@ namespace Typical_Tool
 				// 设置全局区域为 "zh_CN.UTF-8"
 				locale::global(locale("zh_CN.UTF-8"));
 				if (!Tout.good()) {
-					throw Truntime_error(_LOGERRORINFO(Tx("Tout Not good!")));
+					throw Truntime_error(_LOGERRORINFO(TEXT("Tout Not good!")));
 				}
 				if (!Terr.good()) {
-					throw Truntime_error(_LOGERRORINFO(Tx("Terr Not good!")));
+					throw Truntime_error(_LOGERRORINFO(TEXT("Terr Not good!")));
 				}
 				// 使用Config进行格式化
 				Tout.imbue(locale("zh_CN.UTF-8")); // 使用全局Config
 				Terr.imbue(locale("zh_CN.UTF-8"));
-				//Log_Out(ANSIESC_GREEN, Terr, Format(Tx("Log Config: zh_CN.UTF-8 完成!\n"), Log_Tips), ANSIESC_RESET, -1, true);
+				//Log_Out(ANSIESC_GREEN, Terr, Format(TEXT("Log Config: zh_CN.UTF-8 完成!\n"), Log_Tips), ANSIESC_RESET, -1, true);
 #ifdef WIN32APP
 #ifdef _WINDOWS
 				//Windows 控制台编码修改: UTF-8
@@ -183,22 +183,22 @@ namespace Typical_Tool
 #ifndef _CONSOLE
 				//分离控制台
 				if (FreeConsole() == 0) {
-					MessageBox(0, Tx("log: 分离控制台失败!"), Log_Error, MB_ICONSTOP);
-					MessageBox(0, Format(Tx("错误代码: [%]"), ToStr(GetLastError())).str().c_str(), Log_Error, MB_ICONSTOP);
+					MessageBox(0, TEXT("log: 分离控制台失败!"), Log_Error, MB_ICONSTOP);
+					MessageBox(0, Format(TEXT("错误代码: [%]"), ToStr(GetLastError())).str().c_str(), Log_Error, MB_ICONSTOP);
 				}
 				else {
 					if (Debug) {
-						Log_Out(ANSIESC_GREEN, Terr, Format(Tx("%Log: 分离控制台.\n"), Log_Tips), ANSIESC_RESET, -1, true);
+						Log_Out(ANSIESC_GREEN, Terr, Format(TEXT("%Log: 分离控制台.\n"), Log_Tips), ANSIESC_RESET, -1, true);
 					}
 				}
 				//分配控制台: 当不是控制台程序时
 				if (AllocConsole() == 0) {
-					MessageBox(0, Tx("log: 分配控制台失败!"), Log_Error, MB_ICONSTOP);
-					MessageBox(0, Format(Tx("错误代码: [%]"), ToStr(GetLastError())).str().c_str(), Log_Error, MB_ICONSTOP);
+					MessageBox(0, TEXT("log: 分配控制台失败!"), Log_Error, MB_ICONSTOP);
+					MessageBox(0, Format(TEXT("错误代码: [%]"), ToStr(GetLastError())).str().c_str(), Log_Error, MB_ICONSTOP);
 				}
 				else {
 					if (Debug) {
-						Log_Out(ANSIESC_GREEN, Terr, Format(Tx("%Log: 分配控制台.\n"), Log_Tips), ANSIESC_RESET, -1, true);
+						Log_Out(ANSIESC_GREEN, Terr, Format(TEXT("%Log: 分配控制台.\n"), Log_Tips), ANSIESC_RESET, -1, true);
 					}
 				}
 
@@ -207,15 +207,15 @@ namespace Typical_Tool
 				// 重定向标准输出流
 				freopen_s(&FilePtr, "CONOUT$", "w", stdout);
 				if (FilePtr == nullptr) {
-					MessageBox(0, Tx("日志: 重定向标准输出流失败!"), Log_Error, MB_ICONSTOP);
-					MessageBox(0, Format(Tx("错误代码: [%]"), ToStr(GetLastError())).str().c_str(), Log_Error, MB_ICONSTOP);
+					MessageBox(0, TEXT("日志: 重定向标准输出流失败!"), Log_Error, MB_ICONSTOP);
+					MessageBox(0, Format(TEXT("错误代码: [%]"), ToStr(GetLastError())).str().c_str(), Log_Error, MB_ICONSTOP);
 					return;
 				}
 				// 重定向标准错误流
 				freopen_s(&FilePtr, "CONOUT$", "w", stderr);
 				if (FilePtr == nullptr) {
-					MessageBox(0, Tx("日志: 重定向标准错误流失败!"), Log_Error, MB_ICONSTOP);
-					MessageBox(0, Format(Tx("错误代码: [%]"), GetLastError()).str().c_str(), Log_Error, MB_ICONSTOP);
+					MessageBox(0, TEXT("日志: 重定向标准错误流失败!"), Log_Error, MB_ICONSTOP);
+					MessageBox(0, Format(TEXT("错误代码: [%]"), GetLastError()).str().c_str(), Log_Error, MB_ICONSTOP);
 					return;
 				}
 #endif
@@ -239,7 +239,7 @@ namespace Typical_Tool
 		}
 		static void ConsoleClear() {
 			Log::wait(PauseTime, false);
-			Terr << Tx("\033[2J\033[H");  // ANSI 转义序列：清屏并将光标移至左上角
+			Terr << TEXT("\033[2J\033[H");  // ANSI 转义序列：清屏并将光标移至左上角
 		}
 		static void ShowMessage() {
 			ConsoleClear(); //清空控制台消息残留
@@ -302,14 +302,14 @@ namespace Typical_Tool
 				}
 			}
 			if (Debug) {
-				Log_Out(ANSIESC_YELLOW, Terr, Format(Tx("%Log: 日志写入线程->退出!\n"), Log_Warning), ANSIESC_RESET, -1, true);
+				Log_Out(ANSIESC_YELLOW, Terr, Format(TEXT("%Log: 日志写入线程->退出!\n"), Log_Warning), ANSIESC_RESET, -1, true);
 			}
 		}
 		static void StopLogWrite() {
 			if (!IsLogFileWriteThreadStop.load()) {
 				IsLogFileWriteThreadStop.store(true); //退出 条件
 				LogFileProcessing.join(); //主线程等待 后台退出
-				Log_Out(ANSIESC_YELLOW, Terr, Format(Tx("%Log: 日志写入完成! 程序退出...\n"), Log_Warning), ANSIESC_RESET, -1, true);
+				Log_Out(ANSIESC_YELLOW, Terr, Format(TEXT("%Log: 日志写入完成! 程序退出...\n"), Log_Warning), ANSIESC_RESET, -1, true);
 				//Time::wait_s<time::ms>(10); //主线程等待 后台退出
 			}
 		}
@@ -329,8 +329,8 @@ namespace Typical_Tool
 		}
 
 	private:
-		static Tstr GetFormatTime(const Tstr& _TimeFormat = Tx("%Y-%m-%d %H:%M:%S"),
-			const Tstr& _TextLeftFormat = Tx("["), const Tstr& _TextRigthFormat = Tx("]"))
+		static Tstr GetFormatTime(const Tstr& _TimeFormat = TEXT("%Y-%m-%d %H:%M:%S"),
+			const Tstr& _TextLeftFormat = TEXT("["), const Tstr& _TextRigthFormat = TEXT("]"))
 		{
 			std::chrono::system_clock::time_point now = std::chrono::system_clock::now();;
 			// 获取当前时间点（自epoch以来的时间）
@@ -342,7 +342,7 @@ namespace Typical_Tool
 			Tostringstream oss;
 			oss << std::put_time(now_tm, _TimeFormat.c_str()); // 自定义时间格式
 			//不需要修饰字符时, 直接返回格式化后的时间文本
-			if (_TextLeftFormat == Tx("") && _TextRigthFormat == Tx("")) {
+			if (_TextLeftFormat == TEXT("") && _TextRigthFormat == TEXT("")) {
 				return oss.str();
 			}
 			else {
@@ -353,7 +353,7 @@ namespace Typical_Tool
 		static void wait(long long _Number, bool _bShowLog) {
 			Log::bFlushConsoleOutput = false;
 			if (_bShowLog) {
-				Log_Out(ANSIESC_YELLOW, Terr, Format(Tx("%等待: [%]ms\n"), Log_Warning, _Number).str(), ANSIESC_RESET, -1, true);
+				Log_Out(ANSIESC_YELLOW, Terr, Format(TEXT("%等待: [%]ms\n"), Log_Warning, _Number).str(), ANSIESC_RESET, -1, true);
 			}
 			Log::bFlushConsoleOutput = true;
 			std::chrono::milliseconds timeTarget = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now().time_since_epoch()) + 
@@ -391,7 +391,7 @@ namespace Typical_Tool
 			switch (_Lm) {
 			case LogMessage::Tips: {
 				if (this->CMD) {
-					Log_Out(ANSIESC_GREEN, Tout, Format(Tx("%%%"), Log_Tips, _Text, Log_LineFeed), ANSIESC_RESET, _MessageKey);
+					Log_Out(ANSIESC_GREEN, Tout, Format(TEXT("%%%"), Log_Tips, _Text, Log_LineFeed), ANSIESC_RESET, _MessageKey);
 				}
 				else {
 #ifdef _WINDOWS
@@ -403,7 +403,7 @@ namespace Typical_Tool
 			}
 			case LogMessage::Warning: {
 				if (this->CMD) {
-					Log_Out(ANSIESC_YELLOW, Tout, Format(Tx("%%%"), Log_Warning, _Text, Log_LineFeed), ANSIESC_RESET, _MessageKey);
+					Log_Out(ANSIESC_YELLOW, Tout, Format(TEXT("%%%"), Log_Warning, _Text, Log_LineFeed), ANSIESC_RESET, _MessageKey);
 				}
 				else {
 #ifdef _WINDOWS
@@ -415,7 +415,7 @@ namespace Typical_Tool
 			}
 			case LogMessage::Error: {
 				if (this->CMD) {
-					Log_Out(ANSIESC_RED, Terr, Format(Tx("%%%"), Log_Error, _Text, Log_LineFeed), ANSIESC_RESET, _MessageKey, true);
+					Log_Out(ANSIESC_RED, Terr, Format(TEXT("%%%"), Log_Error, _Text, Log_LineFeed), ANSIESC_RESET, _MessageKey, true);
 				}
 				else {
 #ifdef _WINDOWS
@@ -427,7 +427,7 @@ namespace Typical_Tool
 			}
 			case LogMessage::End: {
 				if (this->CMD) {
-					Log_Out(Tx(""), Terr, Format(Tx("%%"), Log_Tab, _Text), Tx(""), _MessageKey);
+					Log_Out(TEXT(""), Terr, Format(TEXT("%%"), Log_Tab, _Text), TEXT(""), _MessageKey);
 					return;
 				}
 				else {
@@ -440,7 +440,7 @@ namespace Typical_Tool
 			}
 			case LogMessage::LineFeed: {
 				if (this->CMD) {
-					Log_Out(Tx(""), Terr, Format(Tx("%%%"), Log_Tab, _Text, Log_LineFeed), Tx(""), _MessageKey);
+					Log_Out(TEXT(""), Terr, Format(TEXT("%%%"), Log_Tab, _Text, Log_LineFeed), TEXT(""), _MessageKey);
 					return;
 				}
 				else {
@@ -456,7 +456,7 @@ namespace Typical_Tool
 		void Logs_lgm()
 		{
 			if (this->CMD) {
-				Log_Out(Tx(""), Tout, Log_LineFeed, Tx(""), -1);
+				Log_Out(TEXT(""), Tout, Log_LineFeed, TEXT(""), -1);
 				return;
 			}
 		}
@@ -518,7 +518,7 @@ namespace Typical_Tool
 		static void SetShowLog(bool _ShowLog)
 		{
 			if (Debug) {
-				Log_Out(ANSIESC_YELLOW, Terr, Format(Tx("%Log 设置: 显示日志\n"), Log_Warning), ANSIESC_RESET, -1, true);
+				Log_Out(ANSIESC_YELLOW, Terr, Format(TEXT("%Log 设置: 显示日志\n"), Log_Warning), ANSIESC_RESET, -1, true);
 			}
 
 			ShowLog = _ShowLog;
@@ -527,7 +527,7 @@ namespace Typical_Tool
 		static void SetShowTime(bool _ShowTime)
 		{
 			if (Debug) {
-				Log_Out(ANSIESC_YELLOW, Terr, Format(Tx("%Log 设置: 显示时间\n"), Log_Warning), ANSIESC_RESET, -1, true);
+				Log_Out(ANSIESC_YELLOW, Terr, Format(TEXT("%Log 设置: 显示时间\n"), Log_Warning), ANSIESC_RESET, -1, true);
 			}
 
 			ShowTime = _ShowTime;
@@ -537,7 +537,7 @@ namespace Typical_Tool
 		{
 			if (Debug) {
 				Terr << std::boolalpha;
-				Log_Out(ANSIESC_YELLOW, Terr, Format(Tx("%Log 设置: 单一日志文件: %\n"), Log_Warning, _SingleLogFile), ANSIESC_RESET, -1, true);
+				Log_Out(ANSIESC_YELLOW, Terr, Format(TEXT("%Log 设置: 单一日志文件: %\n"), Log_Warning, _SingleLogFile), ANSIESC_RESET, -1, true);
 				Terr << std::noboolalpha;
 			}
 
@@ -548,7 +548,7 @@ namespace Typical_Tool
 		{
 #ifdef _WINDOWS
 			if (Debug) {
-				Log_Out(ANSIESC_YELLOW, Terr, Format(Tx("%Log 设置 : 显示控制台\n"), Log_Warning), ANSIESC_RESET, -1, true);
+				Log_Out(ANSIESC_YELLOW, Terr, Format(TEXT("%Log 设置 : 显示控制台\n"), Log_Warning), ANSIESC_RESET, -1, true);
 			}
 			//显示/隐藏 窗口
 			if (_ShowConsole) {
@@ -559,7 +559,7 @@ namespace Typical_Tool
 			}
 #else
 			if (Debug) {
-				Log_Out(ANSIESC_YELLOW, Terr, Format(Tx("%Log 设置 : 显示控制台->无效(#ifndef _WINDOWS)\n"), Log_Warning), ANSIESC_RESET, -1, true);
+				Log_Out(ANSIESC_YELLOW, Terr, Format(TEXT("%Log 设置 : 显示控制台->无效(#ifndef _WINDOWS)\n"), Log_Warning), ANSIESC_RESET, -1, true);
 			}
 #endif
 		}
@@ -592,15 +592,15 @@ namespace Typical_Tool
 			if (IsLogFileWrite) {
 				//获取 当前路径/Log/文件名_Log.txt 
 				//创建文件夹 Log
-				Tstr Log_FilePath = _LogFileName + Tx("_Log.txt");
+				Tstr Log_FilePath = _LogFileName + TEXT("_Log.txt");
 				if (!SingleLogFile) {
-					Tstr Log_FolderName = Tx("Log");
+					Tstr Log_FolderName = TEXT("Log");
 					if (std::filesystem::exists(Log_FolderName)) { //目录存在
 						if (std::filesystem::is_directory(Log_FolderName)) { // 是目录
 							//Log文件名: 格式化日期时间(年-月-日_时-分-秒) + .txt
-							Tstr Log_FileName = Log::GetFormatTime(Tx("%Y-%m-%d_%H-%M-%S_"), Tx(""), Tx(""));
+							Tstr Log_FileName = Log::GetFormatTime(TEXT("%Y-%m-%d_%H-%M-%S_"), TEXT(""), TEXT(""));
 							// ./Log/时间.txt  ||  ./时间.txt
-							Log_FilePath = Format(Tx("%%%%"), Log_FolderName, PATH_SLASH, Log_FileName, Log_FilePath);
+							Log_FilePath = Format(TEXT("%%%%"), Log_FolderName, PATH_SLASH, Log_FileName, Log_FilePath);
 						}
 						else { // 不是目录
 						}
@@ -608,29 +608,29 @@ namespace Typical_Tool
 					else { //目录不存在
 						std::filesystem::create_directory(Log_FolderName); //创建目录
 						//Log文件名: 格式化日期时间(年-月-日_时-分-秒) + .txt
-						Tstr Log_FileName = Log::GetFormatTime(Tx("%Y-%m-%d_%H-%M-%S_"), Tx(""), Tx(""));
+						Tstr Log_FileName = Log::GetFormatTime(TEXT("%Y-%m-%d_%H-%M-%S_"), TEXT(""), TEXT(""));
 						//Log/时间.txt  ||  ./时间.txt
-						Log_FilePath = Format(Tx("%%%%"), Log_FolderName, PATH_SLASH, Log_FileName, Log_FilePath);
+						Log_FilePath = Format(TEXT("%%%%"), Log_FolderName, PATH_SLASH, Log_FileName, Log_FilePath);
 					}
 				}
 
 				//打开文件
 				if (Debug) {
-					Log_Out(ANSIESC_GREEN, Terr, Format(Tx("%Log: 日志输出文件名[%]\n"), Log_Tips, Log_FilePath), ANSIESC_RESET, -1, true);
+					Log_Out(ANSIESC_GREEN, Terr, Format(TEXT("%Log: 日志输出文件名[%]\n"), Log_Tips, Log_FilePath), ANSIESC_RESET, -1, true);
 				}
-				if (_LogFilePath != Tx("")) {
-					Log_FilePath = Format(Tx("%\\%"), _LogFilePath, Log_FilePath);
+				if (_LogFilePath != TEXT("")) {
+					Log_FilePath = Format(TEXT("%\\%"), _LogFilePath, Log_FilePath);
 				}
-				LogFileStream_Out = std::make_shared<Tofstream>(Format(Tx("%"), Log_FilePath), ios::out);
+				LogFileStream_Out = std::make_shared<Tofstream>(Format(TEXT("%"), Log_FilePath), ios::out);
 				if (!LogFileStream_Out->good()) {
 					if (Debug) {
-						Log_Out(ANSIESC_RED, Terr, Format(Tx("%Log: [%]打开文件失败!\n"), Log_Error, Log_FilePath), ANSIESC_RESET, -1, true);
+						Log_Out(ANSIESC_RED, Terr, Format(TEXT("%Log: [%]打开文件失败!\n"), Log_Error, Log_FilePath), ANSIESC_RESET, -1, true);
 					}
 					return;
 				}
 				else {
 					if (Debug) {
-						Log_Out(ANSIESC_GREEN, Terr, Format(Tx("%Log: [%]打开文件成功!\n"), Log_Tips, Log_FilePath), ANSIESC_RESET, -1, true);
+						Log_Out(ANSIESC_GREEN, Terr, Format(TEXT("%Log: [%]打开文件成功!\n"), Log_Tips, Log_FilePath), ANSIESC_RESET, -1, true);
 					}
 
 					//Terr << "Log: 文件 开始写入!\n";
@@ -638,7 +638,7 @@ namespace Typical_Tool
 					std::thread LogFileWriteThread(&Log::LogWirteToFile, this, std::move(LogFileStream_Out), Log_FilePath);
 					LogFileProcessing = std::move(LogFileWriteThread);
 					if (Debug) {
-						Log_Out(ANSIESC_GREEN, Terr, Format(Tx("%Log: 日志写入线程 启动!\n"), Log_Tips), ANSIESC_RESET, -1, true);
+						Log_Out(ANSIESC_GREEN, Terr, Format(TEXT("%Log: 日志写入线程 启动!\n"), Log_Tips), ANSIESC_RESET, -1, true);
 					}
 				}
 			}
@@ -648,14 +648,14 @@ namespace Typical_Tool
 				IsLogAllOutput = true;
 
 				if (Debug) {
-					Log_Out(ANSIESC_YELLOW, Terr, Format(Tx("%Log: File Output level >> All <<\n"), Log_Warning), ANSIESC_RESET, -1, true);
+					Log_Out(ANSIESC_YELLOW, Terr, Format(TEXT("%Log: File Output level >> All <<\n"), Log_Warning), ANSIESC_RESET, -1, true);
 				}
 			}
 			else {
 				IsLogAllOutput = false;
 
 				if (Debug) {
-					Log_Out(ANSIESC_YELLOW, Terr, Format(Tx("%Log: File Output level >> Error <<\n"), Log_Warning), ANSIESC_RESET, -1, true);
+					Log_Out(ANSIESC_YELLOW, Terr, Format(TEXT("%Log: File Output level >> Error <<\n"), Log_Warning), ANSIESC_RESET, -1, true);
 				}
 			}
 		}
@@ -682,17 +682,17 @@ namespace Typical_Tool
 	template<class T = bool>
 	void Log_README()
 	{
-		Tout << Tx("\t\tLog_README():")
-			<< Tx("#define _ANSIESC_CONSOLE_CHAR_COLOR: 控制台转义字符修改字符颜色\n\n")
-			<< Tx("#define _Debug(或自定义 Debug宏): 显示Log中的 Debug消息\n\n")
-			<< Tx("#ifndef _DEBUG: _WINDOWS/_CONSOLE\n")
-			<< Tx("lgr(Format(Tx(\"%s :没有文件!\"), Path), War); \n")
-			<< Tx("_DEBUG: _WINDOWS / _CONSOLE\n")
-			<< Tx("lg(\"关闭窗口\", Tip); \n\n")
-			<< Tx("#ifndef _DEBUG: _CONSOLE\n")
-			<< Tx("lgcr(\"Code: 404\", Err); \n")
-			<< Tx("_DEBUG: _CONSOLE\n")
-			<< Tx("lgc(\"Log.h\", Lnf); \n");
+		Tout << TEXT("\t\tLog_README():")
+			<< TEXT("#define _ANSIESC_CONSOLE_CHAR_COLOR: 控制台转义字符修改字符颜色\n\n")
+			<< TEXT("#define _Debug(或自定义 Debug宏): 显示Log中的 Debug消息\n\n")
+			<< TEXT("#ifndef _DEBUG: _WINDOWS/_CONSOLE\n")
+			<< TEXT("lgr(Format(TEXT(\"%s :没有文件!\"), Path), War); \n")
+			<< TEXT("_DEBUG: _WINDOWS / _CONSOLE\n")
+			<< TEXT("lg(\"关闭窗口\", Tip); \n\n")
+			<< TEXT("#ifndef _DEBUG: _CONSOLE\n")
+			<< TEXT("lgcr(\"Code: 404\", Err); \n")
+			<< TEXT("_DEBUG: _CONSOLE\n")
+			<< TEXT("lgc(\"Log.h\", Lnf); \n");
 	}
 
 	static Log& log_Namespace = lgc;
@@ -712,7 +712,7 @@ namespace Typical_Tool
 			//创建双缓冲
 			hStdout = GetStdHandle(STD_OUTPUT_HANDLE); // 获取标准输出句柄
 			if (hStdout == INVALID_HANDLE_VALUE) {
-				throw Truntime_error(Tx("Failed to get standard output handle."));
+				throw Truntime_error(TEXT("Failed to get standard output handle."));
 			}
 			hBuffer[0] = hStdout; // 默认缓冲区
 			hBuffer[1] = CreateConsoleScreenBuffer( // 创建第二个缓冲区
@@ -723,7 +723,7 @@ namespace Typical_Tool
 				nullptr
 			);
 			if (hBuffer[1] == INVALID_HANDLE_VALUE) {
-				throw Truntime_error(Tx("Failed to create secondary console buffer."));
+				throw Truntime_error(TEXT("Failed to create secondary console buffer."));
 			}
 
 			// 设置缓冲区大小和窗口尺寸
@@ -759,9 +759,9 @@ namespace Typical_Tool
 			}
 			catch (const std::exception& ex) {
 #ifndef UNICODE
-				lgc(Err, Format(Tx("Error: "), ex.what()));
+				lgc(Err, Format(TEXT("Error: "), ex.what()));
 #else
-				lgc(Err, Format(Tx("Error: "), stow(ex.what())));
+				lgc(Err, Format(TEXT("Error: "), stow(ex.what())));
 #endif
 			}
 		}
@@ -775,7 +775,7 @@ namespace Typical_Tool
 				// 清空另一个缓冲区
 				COORD coord = { 0, 0 };
 				DWORD written;
-				FillConsoleOutputCharacter(hBuffer[1 - currentBuffer], Tx(' '), bufferSize.X * bufferSize.Y, coord, &written);
+				FillConsoleOutputCharacter(hBuffer[1 - currentBuffer], TEXT(' '), bufferSize.X * bufferSize.Y, coord, &written);
 				FillConsoleOutputAttribute(hBuffer[1 - currentBuffer], FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE,
 					bufferSize.X * bufferSize.Y, coord, &written);
 				SetConsoleCursorPosition(hBuffer[1 - currentBuffer], coord);

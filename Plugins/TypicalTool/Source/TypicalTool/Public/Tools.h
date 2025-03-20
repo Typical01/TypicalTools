@@ -126,7 +126,7 @@ namespace UETypicalTool {
 		}
 	}
 	template<class T = bool>
-	void DebugLog(const FString& Text, FColor TextColor = FColor::Red, int32 Key = -1.f, float LogShowTime = -1.f, bool bNewOnTop = true, FVector2D TextScale = UE::Math::TVector2<double>::UnitVector)
+	void DebugLog(const FString& Text, FColor TextColor = FColor::Yellow, int32 Key = -1.f, float LogShowTime = -1.f, bool bNewOnTop = true, FVector2D TextScale = UE::Math::TVector2<double>::UnitVector)
 	{
 		if (LogShowTime == -1.f) {
 			LogShowTime = 3600 * 24; //显示 1 天

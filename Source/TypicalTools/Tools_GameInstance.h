@@ -56,6 +56,7 @@ public:
 	void HideDialogWindow();
 
 	void CreateConfigFile();
+	void SaveConfigFile();
 
 public:
 	// 创建托盘图标

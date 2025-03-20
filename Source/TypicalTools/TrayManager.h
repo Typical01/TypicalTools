@@ -49,6 +49,7 @@ public:
 public:
     static NOTIFYICONDATA nid; // 托盘图标数据
     static HWND hWnd;  // 窗口句柄
+    static HMENU hMenu;  // 窗口句柄
     static const UINT TRAY_ICON_ID = 1; // 图标ID
     static const UINT WM_TRAYICON = WM_USER + 1; // 自定义消息ID
 
