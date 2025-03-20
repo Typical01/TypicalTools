@@ -7,7 +7,23 @@
 
 void UEntryWidget::OutputLog()
 {
-    tytl::DebugLog(FString::Printf(TEXT("UEntryWidget::OutputLog: ")));
+    UEtytl::DebugLog(FString::Printf(TEXT("UEntryWidget::OutputLog: ")));
+}
+
+void UEntryWidget::Init(UUserWidget* _SettingWidget)
+{
+    USettingWidget* tempSettingWidget = Cast<USettingWidget>(_SettingWidget);
+    if (tempSettingWidget) {
+        SettingWidget = tempSettingWidget;
+        ListViewShellConfig = tempSettingWidget->ListViewShellConfig;
+        ShellConfigItemIndex = tempSettingWidget->GetListViewConfigItemEnd();
+        ShellConfigItem = Cast<UShellConfigItem>(tempSettingWidget->FindListViewIndex(ShellConfigItemIndex));
+    }
+}
+
+void UEntryWidget::NativeOnListItemObjectSet(UObject* _ListItemObject)
+{
+    ShellConfigItem = Cast<UShellConfigItem>(_ListItemObject);
 }
 
 
@@ -18,6 +34,6 @@ void UEntryWidget::SetListViewConfigItemMode(FString _ShellConfigItemMode)
         ComboBoxStringShellConfigMode->SetSelectedOption(_ShellConfigItemMode);
     }
     else {
-        tytl::DebugLog(FString::Printf(TEXT("UShellConfigItemWidget::SetListViewConfigItemMode: ComboBoxStringShellConfigMode 无效!")));
+        UEtytl::DebugLog(FString::Printf(TEXT("UShellConfigItemWidget::SetListViewConfigItemMode: ComboBoxStringShellConfigMode 无效!")));
     }
 }

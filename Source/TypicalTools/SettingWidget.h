@@ -5,10 +5,10 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/ListView.h"
-#include "Components/EditableTextBox.h"
+
 #include "ShellConfigItem.h"
 #include "SettingItem.h"
-#include "EntryWidget.h"
+
 #include "SettingWidget.generated.h"
 
 /**
@@ -20,6 +20,8 @@ class TYPICALTOOLS_API USettingWidget : public UUserWidget
 	GENERATED_BODY()
 
 public:
+	class UTools_GameInstance* Tools_GameInstance;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 	UListView* ListViewShellConfig; //列表视图
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -29,10 +31,15 @@ public:
 	bool bAutoStarting = false; //开机自启动
 
 public:
+ 	virtual ~USettingWidget();
+
+public:
 	UFUNCTION(BlueprintCallable, Category = "Shell")
-	void InitializeLiListView();
+	void InitializeListView();
 	UFUNCTION(BlueprintCallable, Category = "Shell")
 	int32 FindListViewItem(UObject* _Item);
+	UFUNCTION(BlueprintCallable, Category = "Shell")
+	UObject* FindListViewIndex(int32 _Index);
 	UFUNCTION(BlueprintCallable, Category = "Shell")
 	void DeleteListViewItem(UObject* _Item);
 
@@ -60,7 +67,7 @@ public:
 	int32 GetListViewConfigItemEnd();
 
 	UFUNCTION(BlueprintCallable, Category = "Shell")
-	void SaveListViewConfigItem();
+	void SaveSettingConfigFile();
 	UFUNCTION(BlueprintCallable, Category = "Shell")
-	void LoadListViewConfigItem();
+	void LoadSettingConfigFile();
 };

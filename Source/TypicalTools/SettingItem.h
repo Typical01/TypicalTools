@@ -17,14 +17,16 @@ class TYPICALTOOLS_API USettingItem : public UObject
 public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FString OriginalResolutionWidth;
+	FString BeginResolutionWidth = { TEXT("1920") };
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FString OriginalResolutionHeight;
+	FString BeginResolutionHeight = { TEXT("1080") };
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FString TargetResolutionWidth;
+	FString TargetResolutionWidth = { TEXT("1280") };
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FString TargetResolutionHeight;
-	
+	FString TargetResolutionHeight = { TEXT("960") };
+
+public:
+
 public:
 	void OutputLog();
 };

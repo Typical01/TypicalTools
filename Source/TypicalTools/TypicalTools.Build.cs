@@ -1,5 +1,6 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
+using System.Collections.Generic;
 using System.IO;
 using UnrealBuildTool;
 
@@ -37,13 +38,20 @@ public class TypicalTools : ModuleRules
         //// 添加包含路径
         //PublicIncludePaths.Add(ModuleDirectory + "/ThirdParty/Include");
         //PublicIncludePaths.AddRange(new string[] { IncludePath });
+
+        if (Target.Platform == UnrealTargetPlatform.Win64) //Win
+        {
+            PublicDefinitions.Add("_WINDOWS");
+        }
+
+
         PublicIncludePaths.AddRange(new string[] { ModuleDirectory });
         //// 添加库文件
         //PublicAdditionalLibraries.AddRange(new string[] { LibraryFilePath_libTypical });
 
 
         PublicDependencyModuleNames.AddRange(new string[] { 
-            "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "UMG", "Slate", "SlateCore", "Json", "JsonUtilities", "TypicalTool", "libTypical"
+            "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "UMG", "Slate", "SlateCore", "Json", "JsonUtilities", "TypicalTool", "libTypicalLibrary"
         });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });

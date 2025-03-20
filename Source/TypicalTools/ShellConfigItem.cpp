@@ -22,7 +22,7 @@ void UShellConfigItem::Defualut()
     this->Mode = 0;
     this->ShowWindow = true;
     this->MenuButton = true;
-    tytl::DebugLog(FString::Printf(TEXT("UShellConfigItem::Defualut: NULL!")), FColor::Yellow);
+    UEtytl::DebugLog(FString::Printf(TEXT("UShellConfigItem::Defualut: NULL!")), FColor::Yellow);
 }
 
 FString UShellConfigItem::ConvertIntToShellMode(int32 _ShellMode)
@@ -59,10 +59,10 @@ int32 UShellConfigItem::ConvertShellModeToInt(FString _ShellMode)
 
 void UShellConfigItem::OutputLog()
 {
-    tytl::DebugLog(FString::Printf(TEXT("UShellConfigItem::OutputLog: [%s]"), *ItemName));
-    tytl::DebugLog(FString::Printf(TEXT("UShellConfigItem::OutputLog: [%s]"), *File));
-    tytl::DebugLog(FString::Printf(TEXT("UShellConfigItem::OutputLog: [%s]"), *Argument));
-    tytl::DebugLog(FString::Printf(TEXT("UShellConfigItem::OutputLog: [%s]"), *ConvertIntToShellMode(Mode)));
-    tytl::DebugLog(FString::Printf(TEXT("UShellConfigItem::OutputLog: [%d]"), ShowWindow));
-    tytl::DebugLog(FString::Printf(TEXT("UShellConfigItem::OutputLog: [%d]"), MenuButton));
+    UEtytl::DebugLog(FString::Printf(TEXT("UShellConfigItem::OutputLog: [%s]"), *ItemName));
+    UEtytl::DebugLog(FString::Printf(TEXT("UShellConfigItem::OutputLog: [%s]"), *File));
+    UEtytl::DebugLog(FString::Printf(TEXT("UShellConfigItem::OutputLog: [%s]"), *Argument));
+    UEtytl::DebugLog(FString::Printf(TEXT("UShellConfigItem::OutputLog: [%s]"), *ConvertIntToShellMode(Mode)));
+    UEtytl::DebugLog(FString::Printf(TEXT("UShellConfigItem::OutputLog: [%d]"), ShowWindow));
+    UEtytl::DebugLog(FString::Printf(TEXT("UShellConfigItem::OutputLog: [%d]"), MenuButton));
 }

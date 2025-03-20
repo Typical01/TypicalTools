@@ -22,6 +22,9 @@ public class libTypicalLibrary : ModuleRules
         {
             PublicDefinitions.Add("_WINDOWS");
 
+            PublicDefinitions.Add("_CRT_SECURE_NO_WARNINGS");
+            PublicDefinitions.Add("_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING");
+
             ConfigurationFolder_DebugAndRelease = Target.Configuration == UnrealTargetConfiguration.Debug ? "Debug_Win" : "Release_Win";
             LibraryFilePath_libTypical = Path.Combine(LibPath_libTypical, ConfigurationFolder_DebugAndRelease, "libTypical.lib");
         }
@@ -30,6 +33,7 @@ public class libTypicalLibrary : ModuleRules
             ConfigurationFolder_DebugAndRelease = Target.Configuration == UnrealTargetConfiguration.Debug ? "Debug" : "Release";
             LibraryFilePath_libTypical = Path.Combine(LibPath_libTypical, ConfigurationFolder_DebugAndRelease, "libTypical.lib");
         }
+
 
         // 添加包含路径
         //PublicIncludePaths.Add(IncludePath_libTypical);

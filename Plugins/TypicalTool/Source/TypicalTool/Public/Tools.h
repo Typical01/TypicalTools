@@ -12,10 +12,17 @@
 #include "Serialization/JsonSerializer.h"
 #include "Serialization/JsonWriter.h"
 #include "Misc/FileHelper.h"
-
+#include "Misc/Paths.h"
+#include "HAL/PlatformFilemanager.h"
 #include "Framework/Application/SlateApplication.h"
 #include "Widgets/SWindow.h"
 #include "GameFramework/GameUserSettings.h"
+#include "Memory.h"
+#include "Engine/GameViewportClient.h"
+#include "Runtime/Slate/Public/Framework/Application/SlateApplication.h"
+#include "Runtime/Launch/Resources/Version.h"
+#include "Kismet/KismetSystemLibrary.h"
+#include "GameFramework/PlayerController.h"
 
 #include "Engine/World.h"
 #include "Templates/UnrealTemplate.h"
@@ -31,7 +38,7 @@ public:
 	~Tools();
 };
 
-namespace Typical_Tool {
+namespace UETypicalTool {
 	template<class Target>
 	UUserWidget* GetViewportWidget(APlayerController* PlayerController)
 	{
@@ -115,7 +122,7 @@ namespace Typical_Tool {
 			GEngine->AddOnScreenDebugMessage(Key, LogShowTime, TextColor, Text, bNewOnTop, TextScale);
 		}
 		else {
-			UE_LOG(LogTemp, Error, TEXT("tytl::DebugLog -> GEngine == nullptr"));
+			UE_LOG(LogTemp, Error, TEXT("UEtytl::DebugLog -> GEngine == nullptr"));
 		}
 	}
 	template<class T = bool>
@@ -139,7 +146,7 @@ namespace Typical_Tool {
 			}
 		}
 		else {
-			UE_LOG(LogTemp, Error, TEXT("tytl::DebugLog -> GEngine == nullptr"));
+			UE_LOG(LogTemp, Error, TEXT("UEtytl::DebugLog -> GEngine == nullptr"));
 		}
 	}
 
@@ -147,7 +154,7 @@ namespace Typical_Tool {
 	//bool SaveGameData(const FString& DataPath, const Json::Value& JsonValue)
 	//{
 	//	// Jsoncpp
-	//	tytl::JsonManage SaveGame;
+	//	UEtytl::JsonManage SaveGame;
 	//	SaveGame.Init(Tools::FStringToStdWstring(DataPath), false);
 	//	SaveGame.SetJsonValue(JsonValue);
 
@@ -163,7 +170,7 @@ namespace Typical_Tool {
 	//bool LoadGameData(const FString& DataPath, Json::Value& JsonValue, Json::Value& DefaultJsonValue)
 	//{
 	//	// Jsoncpp
-	//	tytl::JsonManage SaveGame;
+	//	UEtytl::JsonManage SaveGame;
 	//	if (SaveGame.Init(Tools::FStringToStdWstring(DataPath), true)) {
 	//		JsonValue = SaveGame.GetJsonValue();
 	//		return true;
@@ -188,11 +195,10 @@ namespace Typical_Tool {
 	bool ReadJsonFile(const TCHAR* JsonFilePath, TSharedPtr<FJsonObject>& ParsedJsonObject, FString& ErrorMessage)
 	{
 		// 读取文件内容
-		FString FilePath = FPaths::ProjectDir() / JsonFilePath;
 		FString InputString;
-		if (!FFileHelper::LoadFileToString(InputString, *FilePath)) {
+		if (!FFileHelper::LoadFileToString(InputString, JsonFilePath)) {
 			ErrorMessage = TEXT("文件错误");
-			UE_LOG(LogTemp, Error, TEXT("Tools::ReadJsonFile: 读取 JSON 文件失败! 路径: [%s]"), *FilePath);
+			DebugLog(FString::Printf(TEXT("UEtytl::ReadJsonFile: 读取 JSON 文件失败! 路径: [%s]"), JsonFilePath));
 			return false;
 		}
 
@@ -200,7 +206,7 @@ namespace Typical_Tool {
 		TSharedRef<TJsonReader<>> Reader = TJsonReaderFactory<>::Create(InputString);
 		if (!FJsonSerializer::Deserialize(Reader, ParsedJsonObject)) {
 			ErrorMessage = TEXT("非文件错误");
-			UE_LOG(LogTemp, Error, TEXT("Tools::ReadJsonFile: 解析 JSON 字符串失败! 错误: {%s}"), *Reader->GetErrorMessage());
+			DebugLog(FString::Printf(TEXT("UEtytl::ReadJsonFile: 解析 JSON 字符串失败! 错误: {%s}"), *Reader->GetErrorMessage()));
 			return false;
 		}
 
@@ -221,10 +227,9 @@ namespace Typical_Tool {
 		}
 
 		// 保存到文件
-		FString FilePath = FPaths::ProjectDir() / JsonFilePath;
-		if (!FFileHelper::SaveStringToFile(OutputString, *FilePath)) {
+		if (!FFileHelper::SaveStringToFile(OutputString, JsonFilePath)) {
 			ErrorMessage = TEXT("文件错误");
-			UE_LOG(LogTemp, Error, TEXT("tytl::WriteJsonFile: 写入 JSON 文件失败! 路径: [%s]"), *FilePath);
+			UE_LOG(LogTemp, Error, TEXT("UEtytl::WriteJsonFile: 写入 JSON 文件失败! 路径: [%s]"), JsonFilePath);
 			return false;
 		}
 
@@ -362,39 +367,61 @@ namespace Typical_Tool {
 				// 应用设置（不检查命令行参数）
 				UserSettings->ApplySettings(false);
 
-				DebugLog(FString::Printf(TEXT("tytl::SetWindowResolution: Width[%d]/Height[%d]/ScreenMode[%d]!"), _Width, _Height, _Fullscreen));
+				DebugLog(FString::Printf(TEXT("UEtytl::SetWindowResolution: Width[%d]/Height[%d]/ScreenMode[%d]!"), _Width, _Height, _Fullscreen));
 			}
 			else {
-				DebugLog(TEXT("tytl::SetWindowResolution: 游戏用户设置无效!"));
+				DebugLog(TEXT("UEtytl::SetWindowResolution: 游戏用户设置无效!"));
 			}
 		}
 	}
 
+	template<class T = bool>
+	void ExitGame(UWorld* World)
+	{
+		if (!World) {
+			return;
+		}
+
+		// 获取第一个玩家控制器
+		APlayerController* PlayerController = World->GetFirstPlayerController();
+		if (!PlayerController) {
+			return;
+		}
+
+		// 调用 QuitGame 函数退出游戏
+		UKismetSystemLibrary::QuitGame(World, PlayerController, EQuitPreference::Quit, false);
+	}
+
 	/*
-	* Bug: 无效地址访问, 导致编辑器闪退
+	* _CreateFolderName: 创建的文件夹名称
+	* _TargetFolderPath: 创建文件夹的路径(默认为内容文件夹)
 	*/
 	template<class T = bool>
-	void ExitGame()
+	bool CreateDirectorys(FString _CreateFolderName, FString _TargetFolderPath = FPaths::ProjectContentDir())
 	{
-		if (GIsEditor)
+		// 组合成完整的路径: 获取内容目录的路径 + 创建的文件夹名称
+		FString NewFolderPath = FPaths::Combine(_TargetFolderPath, _CreateFolderName);
+		IPlatformFile& PlatformFile = FPlatformFileManager::Get().GetPlatformFile(); // 获取平台文件管理器
+
+		// 检查文件夹是否存在
+		if (!PlatformFile.DirectoryExists(*NewFolderPath))
 		{
-			// 在编辑器模式下，停止游戏实例
-			if (GEngine)
-			{
-				GEngine->Exec(GEngine->GetWorld(), TEXT("STOPPLAY"));
-			}
-		}
-		else
-		{
-			if (GEngine && GEngine->IsInitialized())
-			{
-				FGenericPlatformMisc::RequestExit(false);
+			bool bSuccess = PlatformFile.CreateDirectory(*NewFolderPath); // 创建文件夹
+			if (bSuccess) {
+				DebugLog(FString::Printf(TEXT("UEtytl::CreateDirectory: 成功创建文件夹：[%s]"), *NewFolderPath), FColor::Green);
+
+				return true;
 			}
 			else {
-				DebugLog(FString::Printf(TEXT("tytl::ExitGame: 引擎未初始化/或无效!")));
+				DebugLog(FString::Printf(TEXT("UEtytl::CreateDirectory: 无法创建文件夹：[%s]"), *NewFolderPath), FColor::Yellow);
+				return false;
 			}
+		}
+		else {
+			DebugLog(FString::Printf(TEXT("UEtytl::CreateDirectory: 文件夹已存在：[%s]"), *NewFolderPath));
+			return true;
 		}
 	}
 }
 
-namespace tytl = Typical_Tool;
+namespace UEtytl = UETypicalTool;

@@ -4,10 +4,11 @@
 #include "SettingItem.h"
 #include "TypicalTool/Public/Tools.h"
 
+
 void USettingItem::OutputLog()
 {
-    tytl::DebugLog(FString::Printf(TEXT("USettingItem::OutputLog: OriginalResolutionWidth[%s]"), *this->OriginalResolutionWidth));
-    tytl::DebugLog(FString::Printf(TEXT("USettingItem::OutputLog: OriginalResolutionHeight[%s]"), *this->OriginalResolutionHeight));
-    tytl::DebugLog(FString::Printf(TEXT("USettingItem::OutputLog: TargetResolutionWidth[%s]"), *this->TargetResolutionWidth));
-    tytl::DebugLog(FString::Printf(TEXT("USettingItem::OutputLog: TargetResolutionHeight[%s]"), *this->TargetResolutionHeight));
+    UEtytl::DebugLog(FString::Printf(TEXT("USettingItem::OutputLog: OriginalResolutionWidth[%s]"), *this->BeginResolutionWidth));
+    UEtytl::DebugLog(FString::Printf(TEXT("USettingItem::OutputLog: OriginalResolutionHeight[%s]"), *this->BeginResolutionHeight));
+    UEtytl::DebugLog(FString::Printf(TEXT("USettingItem::OutputLog: TargetResolutionWidth[%s]"), *this->TargetResolutionWidth));
+    UEtytl::DebugLog(FString::Printf(TEXT("USettingItem::OutputLog: TargetResolutionHeight[%s]"), *this->TargetResolutionHeight));
 }
