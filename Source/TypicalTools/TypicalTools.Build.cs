@@ -42,6 +42,7 @@ public class TypicalTools : ModuleRules
         if (Target.Platform == UnrealTargetPlatform.Win64) //Win
         {
             PublicDefinitions.Add("_WINDOWS");
+            PublicAdditionalLibraries.Add("Advapi32.lib");
         }
 
 

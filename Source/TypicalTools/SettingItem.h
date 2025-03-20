@@ -4,7 +4,24 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
+
+#include <vector>
+
 #include "SettingItem.generated.h"
+
+
+// 用于存储分辨率的结构体
+struct Resolution {
+	int width;
+	int height;
+	int refreshRate;
+
+	bool operator<(const Resolution& other) const {
+		if (width != other.width) return width < other.width;
+		if (height != other.height) return height < other.height;
+		return refreshRate < other.refreshRate;
+	}
+};
 
 /**
  * 
@@ -16,6 +33,8 @@ class TYPICALTOOLS_API USettingItem : public UObject
 
 public:
 
+	std::vector<Resolution> ResolutionVec;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FString BeginResolutionWidth = { TEXT("1920") };
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -26,7 +45,7 @@ public:
 	FString TargetResolutionHeight = { TEXT("960") };
 
 public:
-
-public:
 	void OutputLog();
 };
+
+std::vector<Resolution> GetAllSupportedResolutions();

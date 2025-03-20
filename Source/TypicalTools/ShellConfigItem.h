@@ -18,7 +18,7 @@ public:
     UShellConfigItem() : Super() {};
     
     UFUNCTION(BlueprintCallable, Category = "Shell")
-    void Initialize(FString _ItemName, FString _File, FString _Argument, int32 _Mode, bool _ShowWindow, bool _MenuButton);
+    void Initialize(FString _ItemName, FString _File, FString _Argument, FString _Mode, bool _ShowWindow, bool _MenuButton);
     UFUNCTION(BlueprintCallable, Category = "Shell")
     void Defualut();
 
@@ -37,7 +37,7 @@ public:
     UPROPERTY(BlueprintReadWrite, Category = "ListItem")
     FString Argument;
     UPROPERTY(BlueprintReadWrite, Category = "ListItem")
-    int32 Mode;
+    FString Mode;
     UPROPERTY(BlueprintReadWrite, Category = "ListItem")
     bool ShowWindow;
     UPROPERTY(BlueprintReadWrite, Category = "ListItem")

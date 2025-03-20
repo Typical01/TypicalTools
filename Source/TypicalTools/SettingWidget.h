@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "Components/ListView.h"
+#include "Components/ComboBoxString.h"
 
 #include "ShellConfigItem.h"
 #include "SettingItem.h"
@@ -26,6 +27,15 @@ public:
 	UListView* ListViewShellConfig; //列表视图
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	USettingItem* SettingItem; //设置项
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	UComboBoxString* ComboBoxStringBeginResolutionWidth; //初始分辨率: 宽
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	UComboBoxString* ComboBoxStringBeginResolutionHeight; //初始分辨率: 高
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	UComboBoxString* ComboBoxStringTargetResolutionWidth; //目标分辨率: 宽
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	UComboBoxString* ComboBoxStringTargetResolutionHeight; //目标分辨率: 高
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool bAutoStarting = false; //开机自启动

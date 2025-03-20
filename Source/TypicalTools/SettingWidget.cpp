@@ -9,6 +9,7 @@
 
 #include "TypicalTool/Public/Tools.h"
 #include "Tools_GameInstance.h"
+#include "SettingItem.h"
 
 
 
@@ -20,6 +21,10 @@ USettingWidget::~USettingWidget()
 
 void USettingWidget::InitializeListView()
 {
+    if (SettingItem) {
+        SettingItem->ResolutionVec = GetAllSupportedResolutions();
+    }
+
     LoadSettingConfigFile();
 }
 
@@ -56,6 +61,36 @@ void USettingWidget::DeleteListViewItem(UObject* _Item)
 void USettingWidget::OnApplyButton()
 {
     OutputLog();
+
+    SaveSettingConfigFile();
+
+    //if (SettingItem) {
+    //    //创建对象: 基本设置
+    //    TSharedPtr<FJsonObject> ItemObject_BaseSetting = MakeShareable(new FJsonObject());
+    //    ItemObject_BaseSetting->SetBoolField(TEXT("注册表开机自启动"), bAutoStarting);
+    //    ItemObject_BaseSetting->SetNumberField(TEXT("初始屏幕分辨率宽"), FCString::Atoi(*SettingItem->BeginResolutionWidth));
+    //    ItemObject_BaseSetting->SetNumberField(TEXT("初始屏幕分辨率高"), FCString::Atoi(*SettingItem->BeginResolutionHeight));
+    //    ItemObject_BaseSetting->SetNumberField(TEXT("目标屏幕分辨率宽"), FCString::Atoi(*SettingItem->TargetResolutionWidth));
+    //    ItemObject_BaseSetting->SetNumberField(TEXT("目标屏幕分辨率高"), FCString::Atoi(*SettingItem->TargetResolutionHeight));
+
+    //    Tools_GameInstance->ToolsConfig->SetObjectField(TEXT("基本设置"), ItemObject_BaseSetting);
+    //}
+
+    //if (ListViewShellConfig) {
+    //    for (auto tempShellConfigItem : ListViewShellConfig->GetListItems()) {
+    //        auto* ShellConfigItem = Cast<UShellConfigItem>(tempShellConfigItem);
+
+    //        //创建对象: ShellConfig
+    //        TSharedPtr<FJsonObject> ItemObject_ShellConfig = MakeShareable(new FJsonObject());
+    //        ItemObject_ShellConfig->SetStringField(TEXT("文件"), ShellConfigItem->File);
+    //        ItemObject_ShellConfig->SetStringField(TEXT("参数"), ShellConfigItem->Argument);
+    //        ItemObject_ShellConfig->SetStringField(TEXT("模式"), FString::FromInt(ShellConfigItem->Mode));
+    //        ItemObject_ShellConfig->SetBoolField(TEXT("显示窗口"), ShellConfigItem->ShowWindow);
+    //        ItemObject_ShellConfig->SetBoolField(TEXT("菜单按键"), ShellConfigItem->MenuButton);
+
+    //        Tools_GameInstance->ToolsConfig->SetObjectField(ShellConfigItem->ItemName, ItemObject_ShellConfig);
+    //    }
+    //}
 }
 
 void USettingWidget::OnDestroyListViewWidget(UObject* _Item)
@@ -177,46 +212,41 @@ void USettingWidget::SaveSettingConfigFile()
 {
     if (Tools_GameInstance) {
         if (Tools_GameInstance->ToolsConfig.IsValid()) {
-            for (auto& tempJsonObject : Tools_GameInstance->ToolsConfig->Values) {
-                FString& Key = tempJsonObject.Key;
-                TSharedPtr<FJsonValue>& Value = tempJsonObject.Value;
+            if (ListViewShellConfig) {
+                //保存到配置文件: ShellConfigItem
+                for (auto tempJsonObject : ListViewShellConfig->GetListItems()) {
+                    UShellConfigItem* ShellConfigItem = Cast<UShellConfigItem>(tempJsonObject);
 
-                if (Key.Equals(TEXT("基本设置"))) {
-                    //保存到配置文件: 基本设置
-                    TSharedPtr<FJsonObject> BaseSettingObject = Value->AsObject();
+                    TSharedPtr<FJsonObject> ShellConfigItemObject = MakeShareable(new FJsonObject());
+                    ShellConfigItemObject->SetStringField(TEXT("文件"), ShellConfigItem->File);
+                    ShellConfigItemObject->SetStringField(TEXT("参数"), ShellConfigItem->Argument);
+                    ShellConfigItemObject->SetStringField(TEXT("模式"), ShellConfigItem->Mode);
+                    ShellConfigItemObject->SetBoolField(TEXT("显示窗口"), ShellConfigItem->ShowWindow);
+                    ShellConfigItemObject->SetBoolField(TEXT("菜单按键"), ShellConfigItem->MenuButton);
 
-                    if (SettingItem) {
-                        BaseSettingObject->SetBoolField(TEXT("注册表开机自启动"), bAutoStarting);
-                        BaseSettingObject->SetStringField(TEXT("初始屏幕分辨率宽"), SettingItem->BeginResolutionWidth);
-                        BaseSettingObject->SetStringField(TEXT("初始屏幕分辨率高"), SettingItem->BeginResolutionHeight);
-                        BaseSettingObject->SetStringField(TEXT("目标屏幕分辨率宽"), SettingItem->TargetResolutionWidth);
-                        BaseSettingObject->SetStringField(TEXT("目标屏幕分辨率高"), SettingItem->TargetResolutionHeight);
-                    }
-                    else {
-                        UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::InitializeListView(): SettingItem 无效!")));
-                        UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::InitializeListView(): 初始化分辨率失败!")));
-                    }
+                    Tools_GameInstance->ToolsConfig->SetObjectField(ShellConfigItem->ItemName, ShellConfigItemObject);
                 }
-                else {
-                    //保存到配置文件: ShellConfigItem
-                    if (ListViewShellConfig) {
-                        UShellConfigItem* ConfigItem = NewObject<UShellConfigItem>();
-                        ConfigItem->ItemName = Key;
+            }
+            else {
+                UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::SaveSettingConfigFile(): ListViewShellConfig 无效!")));
+                UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::SaveSettingConfigFile(): 添加列表视图项失败!")));
+            }
 
-                        TSharedPtr<FJsonObject> OtherConfigItemObject = Value->AsObject();
-                        OtherConfigItemObject->SetStringField(TEXT("文件"), ConfigItem->File);
-                        OtherConfigItemObject->SetStringField(TEXT("参数"), ConfigItem->Argument);
-                        OtherConfigItemObject->SetStringField(TEXT("模式"), UShellConfigItem::ConvertIntToShellMode(ConfigItem->Mode));
-                        OtherConfigItemObject->SetBoolField(TEXT("显示窗口"), ConfigItem->ShowWindow);
-                        OtherConfigItemObject->SetBoolField(TEXT("菜单按键"), ConfigItem->MenuButton);
+            if (SettingItem) {
+                //保存到配置文件: 基本设置
+                TSharedPtr<FJsonObject> BaseSettingObject = MakeShareable(new FJsonObject());
 
-                        ListViewShellConfig->AddItem(ConfigItem);
-                    }
-                    else {
-                        UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::InitializeListView(): ListViewShellConfig 无效!")));
-                        UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::InitializeListView(): 添加列表视图项失败!")));
-                    }
-                }
+                BaseSettingObject->SetBoolField(TEXT("注册表开机自启动"), bAutoStarting);
+                BaseSettingObject->SetStringField(TEXT("初始屏幕分辨率宽"), SettingItem->BeginResolutionWidth);
+                BaseSettingObject->SetStringField(TEXT("初始屏幕分辨率高"), SettingItem->BeginResolutionHeight);
+                BaseSettingObject->SetStringField(TEXT("目标屏幕分辨率宽"), SettingItem->TargetResolutionWidth);
+                BaseSettingObject->SetStringField(TEXT("目标屏幕分辨率高"), SettingItem->TargetResolutionHeight);
+
+                Tools_GameInstance->ToolsConfig->SetObjectField(TEXT("基本设置"), BaseSettingObject);
+            }
+            else {
+                UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::InitializeListView(): SettingItem 无效!")));
+                UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::InitializeListView(): 初始化分辨率失败!")));
             }
         }
     }
@@ -224,6 +254,14 @@ void USettingWidget::SaveSettingConfigFile()
 
 void USettingWidget::LoadSettingConfigFile()
 {
+    //组合框: 字符串, 初始化
+    //ComboBoxStringBeginResolutionWidth->ClearOptions();
+    //ComboBoxStringBeginResolutionHeight->ClearOptions();
+    //ComboBoxStringTargetResolutionWidth->ClearOptions();
+    //ComboBoxStringTargetResolutionHeight->ClearOptions();
+
+
+
     if (Tools_GameInstance) {
         if (Tools_GameInstance->ToolsConfig.IsValid()) {
             for (auto& tempJsonObject : Tools_GameInstance->ToolsConfig->Values) {
@@ -255,7 +293,7 @@ void USettingWidget::LoadSettingConfigFile()
                         TSharedPtr<FJsonObject> OtherConfigItemObject = Value->AsObject();
                         ConfigItem->File = OtherConfigItemObject->GetStringField(TEXT("文件"));
                         ConfigItem->Argument = OtherConfigItemObject->GetStringField(TEXT("参数"));
-                        ConfigItem->Mode = UShellConfigItem::ConvertShellModeToInt(OtherConfigItemObject->GetStringField(TEXT("模式")));
+                        ConfigItem->Mode = OtherConfigItemObject->GetStringField(TEXT("模式"));
                         ConfigItem->ShowWindow = OtherConfigItemObject->GetBoolField(TEXT("显示窗口"));
                         ConfigItem->MenuButton = OtherConfigItemObject->GetBoolField(TEXT("菜单按键"));
 

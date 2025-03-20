@@ -32,6 +32,7 @@ class TYPICALTOOLS_API UTrayManager : public UObject
 public:
     static USettingWidget* SettingWidget;
     static UTools_GameInstance* Tools_GameInstance;
+    static class UToolsMain* ToolsMain;
 
 public:
     // 创建托盘图标
@@ -59,4 +60,6 @@ public:
     static int ID_Quit; //退出
     static int ID_ToolsConfig; //工具箱配置
     static int ID_SetScreenResolution; //修改屏幕分辨率
+
+    static bool bSetScreenResolution; //修改屏幕分辨率
 };

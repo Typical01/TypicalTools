@@ -4,7 +4,7 @@
 #include "ShellConfigItem.h"
 #include "TypicalTool/Public/Tools.h"
 
-void UShellConfigItem::Initialize(FString _ItemName, FString _File, FString _Argument, int32 _Mode, bool _ShowWindow, bool _MenuButton)
+void UShellConfigItem::Initialize(FString _ItemName, FString _File, FString _Argument, FString _Mode, bool _ShowWindow, bool _MenuButton)
 {
     this->ItemName = _ItemName;
     this->File = _File;
@@ -19,7 +19,7 @@ void UShellConfigItem::Defualut()
     this->ItemName = TEXT("NULL");
     this->File = TEXT("NULL");
     this->Argument = TEXT("NULL");
-    this->Mode = 0;
+    this->Mode = TEXT("打开文件");
     this->ShowWindow = true;
     this->MenuButton = true;
     UEtytl::DebugLog(FString::Printf(TEXT("UShellConfigItem::Defualut: NULL!")), FColor::Yellow);
@@ -62,7 +62,7 @@ void UShellConfigItem::OutputLog()
     UEtytl::DebugLog(FString::Printf(TEXT("UShellConfigItem::OutputLog: [%s]"), *ItemName));
     UEtytl::DebugLog(FString::Printf(TEXT("UShellConfigItem::OutputLog: [%s]"), *File));
     UEtytl::DebugLog(FString::Printf(TEXT("UShellConfigItem::OutputLog: [%s]"), *Argument));
-    UEtytl::DebugLog(FString::Printf(TEXT("UShellConfigItem::OutputLog: [%s]"), *ConvertIntToShellMode(Mode)));
+    UEtytl::DebugLog(FString::Printf(TEXT("UShellConfigItem::OutputLog: [%s]"), *Mode));
     UEtytl::DebugLog(FString::Printf(TEXT("UShellConfigItem::OutputLog: [%d]"), ShowWindow));
     UEtytl::DebugLog(FString::Printf(TEXT("UShellConfigItem::OutputLog: [%d]"), MenuButton));
 }

@@ -80,7 +80,7 @@ void UTools_GameInstance::CreateConfigFile()
 
     //创建对象: 基本设置
     TSharedPtr<FJsonObject> ItemObject_BaseSetting = MakeShareable(new FJsonObject());
-    ItemObject_BaseSetting->SetStringField(TEXT("注册表开机自启动"), TEXT("否"));
+    ItemObject_BaseSetting->SetBoolField(TEXT("注册表开机自启动"), false);
     ItemObject_BaseSetting->SetNumberField(TEXT("初始屏幕分辨率宽"), 1920);
     ItemObject_BaseSetting->SetNumberField(TEXT("初始屏幕分辨率高"), 1080);
     ItemObject_BaseSetting->SetNumberField(TEXT("目标屏幕分辨率宽"), 1280);

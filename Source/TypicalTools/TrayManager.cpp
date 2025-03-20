@@ -9,17 +9,22 @@
 #include "Runtime/Launch/Resources/Windows/resource.h"
 
 #include "TypicalTool/Public/Tools.h"
+#include "ToolsMain.h"
 
 
+using namespace tytl;
 
 USettingWidget* UTrayManager::SettingWidget = nullptr;
 UTools_GameInstance* UTrayManager::Tools_GameInstance = nullptr;
+UToolsMain* UTrayManager::ToolsMain = nullptr;
 NOTIFYICONDATA UTrayManager::nid = {};
 HWND UTrayManager::hWnd = nullptr;
 
 int UTrayManager::ID_Quit = tytl::Win::WindowHost::GetHMENU(); //退出
 int UTrayManager::ID_ToolsConfig = tytl::Win::WindowHost::GetHMENU(); //工具箱配置
 int UTrayManager::ID_SetScreenResolution = tytl::Win::WindowHost::GetHMENU(); //修改屏幕分辨率
+bool UTrayManager::bSetScreenResolution = false; //修改屏幕分辨率
+
 
 void UTrayManager::CreateTrayIcon()
 {
@@ -62,6 +67,9 @@ void UTrayManager::CreateTrayIcon()
     if (Tools_GameInstance) {
         Tools_GameInstance->DialogWindowMain->HideWindow();
     }
+
+    ToolsMain = NewObject<UToolsMain>();
+    ToolsMain->SettingWidget = SettingWidget;
 }
 
 void UTrayManager::RemoveTrayIcon()
@@ -91,62 +99,48 @@ void UTrayManager::SelectMenu(int MenuItemID)
             Tools_GameInstance->DialogWindowMain->ShowWindow();
         }
     }
-//    if (MenuItemID == ID_ToolsConfig)
-//    {
-//        WindowShell.ExecuteAnalyze(Tx("打开配置文件"), Tx("打开文件"), ConfigFile.GetConfigFilePath());
-//        lgr(Tip, Tx("配置格式示例:\n\t[Shell命令名]\n\
-//\t参数=/k ping -t www.baidu.com\n\t文件=cmd\n\t显示窗口=是 (是/否)\n\
-//\t模式=打开文件 (打开文件/打开文件夹/管理员运行)\n\t菜单按键=是 (是/否: 托盘菜单中添加/程序启动时运行)"));
-//        int Result = MessageBox(NULL, Tx("修改完成后, 点击[确定]\n即可更新托盘菜单的选项"), Tx("提示"), MB_OK | MB_ICONQUESTION);
-//        if (Result == IDOK) { //用户确定修改完成
-//            LoadBaseConfig(true);
-//            LoadShellConfig();
-//            LoadToolsMenu(hMenu);
-//        }
-//    }
-//    else if (MenuItemID == ID_SetScreenResolution)
-//    {
-//        if (SetScreenResolution)
-//        {
-//            //SetScreenResolution
-//            SetDisplaySize(
-//                std::stoi(BaseConfigItem.find(Tx("默认的屏幕分辨率宽"))->second),
-//                std::stoi(BaseConfigItem.find(Tx("默认的屏幕分辨率高"))->second)
-//            );
-//            SetScreenResolution = false;
-//
-//            lgc(Tip, Format(Tx("屏幕分辨率修改成功:\n[%] x [%]"),
-//                BaseConfigItem.find(Tx("默认的屏幕分辨率宽"))->second, BaseConfigItem.find(Tx("默认的屏幕分辨率高"))->second));
-//        }
-//        else
-//        {
-//            //SetScreenResolution
-//            SetDisplaySize(
-//                std::stoi(BaseConfigItem.find(Tx("修改的屏幕分辨率宽"))->second),
-//                std::stoi(BaseConfigItem.find(Tx("修改的屏幕分辨率高"))->second)
-//            );
-//            SetScreenResolution = true;
-//
-//            UEtytl::DebugLog(FString::Printf(TEXT("屏幕分辨率修改成功:\n[%] x [%]"),
-//                BaseConfigItem.find(Tx("修改的屏幕分辨率宽"))->second, BaseConfigItem.find(Tx("修改的屏幕分辨率高"))->second));
-//        }
-//    }
-//    else if (MenuItemID == ID_Quit)
-//    {
-//        PostQuitMessage(0);
-//    }
-//    else {
-//        WindowShell.ExeMenuItemShell(MenuItemID);
-//    }
+    else if (MenuItemID == ID_SetScreenResolution)
+    {
+        if (bSetScreenResolution)
+        {
+            USettingItem* SettingItem = SettingWidget->SettingItem;
+            if (SettingItem) {
+                int32 BeginResolutionWidth = FCString::Atoi(*SettingItem->BeginResolutionWidth);
+                int32 BeginResolutionHeight = FCString::Atoi(*SettingItem->BeginResolutionHeight);
+                Win::SetDisplaySize(BeginResolutionWidth, BeginResolutionHeight);
+                bSetScreenResolution = false;
+
+                UEtytl::DebugLog(FString::Printf(TEXT("屏幕分辨率修改成功:\n[%d] x [%d]"), BeginResolutionWidth, BeginResolutionHeight));
+            }
+        }
+        else
+        {
+            USettingItem* SettingItem = SettingWidget->SettingItem;
+            if (SettingItem) {
+                int32 TargetResolutionWidth = FCString::Atoi(*SettingItem->TargetResolutionWidth);
+                int32 TargetResolutionHeight = FCString::Atoi(*SettingItem->TargetResolutionHeight);
+                Win::SetDisplaySize(TargetResolutionWidth, TargetResolutionHeight);
+                bSetScreenResolution = true;
+
+                UEtytl::DebugLog(FString::Printf(TEXT("屏幕分辨率修改成功:\n[%d] x [%d]"), TargetResolutionWidth, TargetResolutionHeight));
+            }
+        }
+    }
+    else {
+        ToolsMain->WindowShell.ExeMenuItemShell(MenuItemID);
+    }
 }
 
 void UTrayManager::ShowContextMenu(HWND _hWnd)
 {
     // 创建右键菜单
     HMENU hMenu = CreatePopupMenu();
+
+
     //为Menu添加选项
-    AppendMenu(hMenu, MF_STRING, ID_SetScreenResolution, TEXT("修改屏幕分辨率"));
+    ToolsMain->LoadToolsMenu(hMenu);
     AppendMenu(hMenu, MF_SEPARATOR, NULL, TEXT("分割线"));
+    AppendMenu(hMenu, MF_STRING, ID_SetScreenResolution, TEXT("修改屏幕分辨率"));
     AppendMenu(hMenu, MF_SEPARATOR, NULL, TEXT("分割线"));
     AppendMenu(hMenu, MF_STRING, ID_ToolsConfig, TEXT("设置"));
     AppendMenu(hMenu, MF_STRING, ID_Quit, TEXT("退出"));
@@ -157,7 +151,7 @@ void UTrayManager::ShowContextMenu(HWND _hWnd)
     // 显示菜单
     SetForegroundWindow(_hWnd);
     //选择的菜单ID
-    SelectMenu(TrackPopupMenu(hMenu, TPM_RIGHTBUTTON | TPM_RETURNCMD, pt.x, pt.y, 0, _hWnd, NULL));
+    SelectMenu(TrackPopupMenu(hMenu, TPM_RIGHTBUTTON | TPM_RETURNCMD, pt.x, pt.y, 0, _hWnd, NULL)); //获取用户选择的菜单项的标识符
 
     DestroyMenu(hMenu);
 }
