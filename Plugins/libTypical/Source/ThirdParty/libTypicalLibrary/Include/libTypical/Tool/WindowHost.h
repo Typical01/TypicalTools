@@ -106,20 +106,20 @@ namespace Typical_Tool {
 				: Message(RegisterHotKeyMessage)
 			{
 				if (message > 0) {
-					lgc(Tip, Format(TEXT("热键注册[%]: 成功!"), this->Message));
+					lgc(Tip, Printf(TEXT("热键注册[%s]: 成功!"), this->Message));
 				}
 				else {
-					lgc(Err, Format(TEXT("热键注册[%]: 错误!\n\t代码(%)"), this->Message, ToStr(message)));
+					lgc(Err, Printf(TEXT("热键注册[%s]: 错误!\n\t代码(%s)"), this->Message, ToStr(message)));
 				}
 			}
 			RegisterHotKeyMessage(Tstr&& RegisterHotKeyMessage, int message)
 				: Message(RegisterHotKeyMessage)
 			{
 				if (message > 0) {
-					lgc(Tip, Format(TEXT("热键注册[%]: 成功!"), this->Message));
+					lgc(Tip, Printf(TEXT("热键注册[%s]: 成功!"), this->Message));
 				}
 				else {
-					lgc(Err, Format(TEXT("热键注册[%]: 错误!\n\t代码(%)"), this->Message, ToStr(message)));
+					lgc(Err, Printf(TEXT("热键注册[%s]: 错误!\n\t代码(%s)"), this->Message, ToStr(message)));
 				}
 			}
 		};
@@ -133,7 +133,7 @@ namespace Typical_Tool {
 
 		public:
 			ShellMessage() : Message(TEXT("")), ErrorCode(0), Status(false) {
-				lgc(Err, Format(TEXT("Shell消息[%]: 非Shell错误()"), this->Message));
+				lgc(Err, Printf(TEXT("Shell消息[%s]: 非Shell错误()"), this->Message));
 			}
 			ShellMessage(const Tstr& ShellMessage, int message)
 				: Message(ShellMessage), ErrorCode(message)
@@ -141,11 +141,11 @@ namespace Typical_Tool {
 				if (ErrorCode < 32) {
 					this->Status = false;
 					//ShellExecute() 成功操作, 则传入为句柄
-					lgc(Err, Format(TEXT("Shell消息[%]: 错误!\n\t代码(%)"), this->Message, ToStr(ErrorCode)));
+					lgc(Err, Printf(TEXT("Shell消息[%s]: 错误!\n\t代码(%s)"), this->Message, ToStr(ErrorCode)));
 				}
 				else {
 					this->Status = true;
-					lgc(Tip, Format(TEXT("Shell消息[%]: 成功!"), this->Message));
+					lgc(Tip, Printf(TEXT("Shell消息[%s]: 成功!"), this->Message));
 				}
 			}
 
@@ -178,10 +178,10 @@ namespace Typical_Tool {
 			bool AddWindowHost(Tstr windowName, HWND& window, int showWindow = 5) {
 				if (!IsWindow(window)) {
 					//创建失败!
-					lg(Err, Format(TEXT("创建窗口失败!\n\t窗口名: [%]"), windowName));
+					lg(Err, Printf(TEXT("创建窗口失败!\n\t窗口名: [%s]"), windowName));
 					return false;
 				}
-				lgc(Tip, Format(TEXT("创建窗口成功!\n\t窗口名: [%]"), windowName));
+				lgc(Tip, Printf(TEXT("创建窗口成功!\n\t窗口名: [%s]"), windowName));
 
 
 				ShowWindow(window, showWindow);
@@ -199,10 +199,10 @@ namespace Typical_Tool {
 
 			static int RegisterWindowClass(WNDCLASS& wndClass) {
 				if (!RegisterClass(&wndClass)) {
-					lg(Err, Format(TEXT("窗口类注册失败!\n\t窗口类名: [%]"), wndClass.lpszClassName));
+					lg(Err, Printf(TEXT("窗口类注册失败!\n\t窗口类名: [%s]"), wndClass.lpszClassName));
 					return 0;
 				}
-				lgc(Tip, Format(TEXT("窗口类注册成功!\n\t窗口类名: [%]"), wndClass.lpszClassName));
+				lgc(Tip, Printf(TEXT("窗口类注册成功!\n\t窗口类名: [%s]"), wndClass.lpszClassName));
 
 
 				return 1;
@@ -240,10 +240,45 @@ namespace Typical_Tool {
 			Tstr MenuButton; //菜单按键
 
 			ShellConfig(Tstr _OperateName, Tstr _ShellOperate, Tstr _File,
-				Tstr _Arg = NULL, Tstr _WindowShow = TEXT("是"), Tstr _MenuButton = TEXT("否"),
-				int _ID_Shell = 0)
+				Tstr _Arg, Tstr _WindowShow = TEXT("是"), Tstr _MenuButton = TEXT("否"))
 				: OperateName(_OperateName), ShellOperate(_ShellOperate), File(_File), Arg(_Arg), WindowShow(_WindowShow), MenuButton(_MenuButton)
 			{}
+
+			ShellConfig(const ShellConfig & Other)
+				: OperateName(Other.OperateName),
+				ShellOperate(Other.ShellOperate),
+				File(Other.File),
+				Arg(Other.Arg),
+				WindowShow(Other.WindowShow),
+				MenuButton(Other.MenuButton) {
+				// 如果有需要深拷贝的成员，在这里处理
+			}
+
+			// 复制赋值运算符重载，实现深拷贝
+			ShellConfig& operator=(const ShellConfig & Other) {
+				if (this != &Other) {
+					OperateName = Other.OperateName;
+					ShellOperate = Other.ShellOperate;
+					File = Other.File;
+					Arg = Other.Arg;
+					WindowShow = Other.WindowShow;
+					MenuButton = Other.MenuButton;
+				}
+				return *this;
+			}
+
+			// 移动赋值运算符重载，实现资源的高效转移
+			ShellConfig& operator=(ShellConfig && Other) noexcept {
+				if (this != &Other) {
+					OperateName = std::move(Other.OperateName);
+					ShellOperate = std::move(Other.ShellOperate);
+					File = std::move(Other.File);
+					Arg = std::move(Other.Arg);
+					WindowShow = std::move(Other.WindowShow);
+					MenuButton = std::move(Other.MenuButton);
+				}
+				return *this;
+			}
 
 			bool operator<(const ShellConfig& other) const
 			{
@@ -274,7 +309,17 @@ namespace Typical_Tool {
 			std::map<int, ShellConfig> ExeMenuItem; //程序菜单项
 
 		public:
-			WindowShell() { }
+			WindowShell() : ExeRunItem(), ExeMenuItem() { }
+
+			void Clear()
+			{
+				if (!ExeRunItem.empty()) {
+					ExeRunItem.clear();
+				}
+				if (!ExeMenuItem.empty()) {
+					ExeMenuItem.clear();
+				}
+			}
 
 		public:
 			void ShellOperate(HMENU Menu, std::vector<ShellConfig>& _ShellConfig) {
@@ -287,23 +332,19 @@ namespace Typical_Tool {
 
 					//区分: 程序启动项/程序菜单项
 					if (MenuButton == TEXT("否")) {
-						ShellConfig tempShellConfig = *tempShell;
-						ExeRunItem.push_back(tempShellConfig);
-						lgc(Format(TEXT("操作名: [%]"), OperateName));
+						ExeRunItem.push_back(*tempShell);
+						lgc(Printf(TEXT("操作名: [%s]"), OperateName));
 						lgc(TEXT("  注册: 程序启动项"));
 						tempShell->OutConfig(); //输出配置
 					}
 					else {
 						int tempMenuID = WindowHost::GetHMENU();
-						//int 菜单项总数 = GetMenuItemCount(菜单);
-						ShellConfig tempShellConfig = *tempShell;
 
-						ExeMenuItem.insert({ tempMenuID, tempShellConfig });
-						lgc(Format(TEXT("操作名: [%]"), OperateName));
+						ExeMenuItem.insert({ tempMenuID, *tempShell });
+						lgc(Printf(TEXT("操作名: [%s]"), OperateName));
 						lgc(TEXT("  注册: 程序菜单项"));
 						//添加菜单项
 						if (AppendMenu(Menu, MF_STRING, tempMenuID, OperateName.c_str())) {
-							UEtytl::DebugLog(FString::Printf(TEXT("WindowShell::ShellOperate(): AppendMenu [%s]"), OperateName.c_str()));
 							tempShell->OutConfig(); //输出配置
 							lgc(TEXT("  程序菜单项: 成功!"));
 						}
@@ -347,7 +388,7 @@ namespace Typical_Tool {
 					ExecuteAnalyze(OperateName, ShellOperate, File, Arg, WindowShow);
 				}
 				else {
-					lgcr(Err, Format(TEXT("ExeMenuItemShell: 没有找到菜单选项 [%]!"), _MenuItemID));
+					lgcr(Err, Printf(TEXT("ExeMenuItemShell: 没有找到菜单选项 [%s]!"), _MenuItemID));
 				}
 			}
 
@@ -373,7 +414,7 @@ namespace Typical_Tool {
 				}
 				else {
 					lgcr(War, TEXT("ExecuteAnalyze: Shell操作模式错误(打开文件/打开文件夹/管理员运行)"));
-					lgcr(War, Format(TEXT("ExecuteAnalyze: 操作名: [%]"), OperateName));
+					lgcr(War, Printf(TEXT("ExecuteAnalyze: 操作名: [%s]"), OperateName));
 					return ShellMessage();
 				}
 
@@ -381,16 +422,10 @@ namespace Typical_Tool {
 				if (WindowShow == TEXT("是")) {
 					ShowWindow = 5;
 				}
-				lgc(War, Format(TEXT("ExecuteAnalyze: 窗口显示 [%]"), WindowShow));
+				lgc(War, Printf(TEXT("ExecuteAnalyze: 窗口显示 [%s]"), WindowShow));
 
 				ShellMessage temp(OperateName, (int)(long long)ShellExecute(NULL, ShellOperate.c_str(), ShellFile.c_str(), ShellArg.c_str(), NULL, ShowWindow));
 				return temp;
-			}
-
-		public:
-			void Clear() {
-				this->ExeRunItem.clear();
-				this->ExeMenuItem.clear();
 			}
 		};
 
@@ -402,18 +437,51 @@ namespace Typical_Tool {
 			* 分辨率: 需要是系统中有的比例, 如: 1920 x 1080(16:9), 1280 x 720(16:9)
 		*/
 		template<class T = bool>
-		void SetDisplaySize(int widthValue, int HeightValue) {
-			//初始化
-			DEVMODE NewDevMode;
-			EnumDisplaySettings(0, ENUM_CURRENT_SETTINGS, &NewDevMode);
+		void SetDisplaySize(int WidthValue, int HeightValue, const Tstr& DisplayName = L"") {
+			DISPLAY_DEVICE displayDevice;
+			displayDevice.cb = sizeof(DISPLAY_DEVICE);
 
-			//记录修改Message
-			NewDevMode.dmFields = DM_PELSWIDTH | DM_PELSHEIGHT;
-			NewDevMode.dmPelsWidth = widthValue;
-			NewDevMode.dmPelsHeight = HeightValue;
+			// 枚举所有显示器
+			for (int i = 0; EnumDisplayDevices(NULL, i, &displayDevice, 0); i++) {
+				// 如果 DisplayName 为空，或者当前显示器名称匹配
+				if (DisplayName.empty() || DisplayName == displayDevice.DeviceName) {
+					DEVMODE devMode;
+					devMode.dmSize = sizeof(DEVMODE);
+					devMode.dmDriverExtra = 0;
 
-			//根据修改Message 修改屏幕分辨率
-			ChangeDisplaySettings(&NewDevMode, 0);
+					// 获取当前显示设置
+					if (EnumDisplaySettings(displayDevice.DeviceName, ENUM_CURRENT_SETTINGS, &devMode)) {
+						// 修改分辨率
+						devMode.dmFields = DM_PELSWIDTH | DM_PELSHEIGHT;
+						devMode.dmPelsWidth = WidthValue;
+						devMode.dmPelsHeight = HeightValue;
+
+						// 测试分辨率是否可用
+						LONG result = ChangeDisplaySettingsEx(displayDevice.DeviceName, &devMode, NULL, CDS_TEST, NULL);
+						if (result == DISP_CHANGE_SUCCESSFUL) {
+							// 应用新的分辨率
+							ChangeDisplaySettingsEx(displayDevice.DeviceName, &devMode, NULL, 0, NULL);
+							lgc(Tip, Printf(TEXT("分辨率已成功修改为: %ssx%ss"), ToStr(WidthValue), ToStr(HeightValue)));
+						}
+						else {
+							lgc(Err, Printf(TEXT("无法修改分辨率，错误代码: %ss"), ToStr(result)));
+						}
+					}
+					else {
+						lgc(Err, TEXT("无法获取当前显示设置!"));
+					}
+
+					// 如果指定了显示器名称，找到后直接返回
+					if (!DisplayName.empty()) {
+						return;
+					}
+				}
+			}
+
+			// 如果指定了显示器名称但未找到
+			if (!DisplayName.empty()) {
+				lgc(Err, Printf(TEXT("未找到指定的显示器: %ss"), DisplayName));
+			}
 		}
 
 		// 分辨率信息
@@ -469,17 +537,16 @@ namespace Typical_Tool {
 		template<class T = bool>
 		void WindowDPI() {
 			//设置DPI感知级别(可选，仅Windows 10 1703及更高版本）
-#if(WINVER >= 0x0605)
-			if (SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_SYSTEM_AWARE) == NULL) { //传入的值无效
-				lgc(TEXT("Windows DPI: 传入的值无效."));
-			}
-			else {
-				lgc(TEXT("Windows DPI: DPI感知(DPI_AWARENESS_CONTEXT_SYSTEM_AWARE) 设置成功!"));
 
-			}
-#else
-			lgc(TEXT("Windows DPI: 无法设置[WINVER < 0x0605]!"));
-#endif
+			// 设置 DPI 感知
+			SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE);
+			//if (SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_SYSTEM_AWARE) == NULL) { //传入的值无效
+			//	lgc(TEXT("Windows DPI: 传入的值无效."));
+			//}
+			//else {
+			//	lgc(TEXT("Windows DPI: DPI感知(DPI_AWARENESS_CONTEXT_SYSTEM_AWARE) 设置成功!"));
+
+			//}
 		}
 
 		//单一实例窗口程序
@@ -488,7 +555,7 @@ namespace Typical_Tool {
 			//程序启动初始化
 			HWND handle = FindWindow(windowClassName.c_str(), windowTitleName.c_str());
 			if (handle != NULL) {
-				lgr(War, Format(TEXT("应用程序已在运行: [%]"), windowTitleName));
+				lgr(War, Printf(TEXT("应用程序已在运行: [%s]"), windowTitleName));
 				return 0;
 			}
 			return 1;
@@ -567,7 +634,7 @@ namespace Typical_Tool {
 			// 打开注册表项
 			result = RegOpenKeyEx(HKEY_CURRENT_USER, regPath.c_str(), 0, KEY_QUERY_VALUE | KEY_SET_VALUE, &hKey); //权限: 查询和设置
 			if (result != ERROR_SUCCESS) {
-				lgc(Err, Format(TEXT("打开密钥[%]失败!"), ToStr(result)));
+				lgc(Err, Printf(TEXT("打开密钥[%s]失败!"), ToStr(result)));
 				return false;
 			}
 
@@ -582,14 +649,14 @@ namespace Typical_Tool {
 				if (result == ERROR_FILE_NOT_FOUND || (result == ERROR_SUCCESS && exePath != existingValue)) {
 					result = RegSetValueEx(hKey, valueName.c_str(), 0, REG_SZ, reinterpret_cast<const BYTE*>(exePath.c_str()), (exePath.size() + 1) * sizeof(wchar_t));
 					if (result != ERROR_SUCCESS) {
-						lgc(Err, Format(TEXT("设置注册表值[%]失败!"), ToStr(result)));
+						lgc(Err, Printf(TEXT("设置注册表值[%s]失败!"), ToStr(result)));
 						RegCloseKey(hKey);
 						return false;
 					}
 					lgc(Tip, TEXT("已[设置]开机自启动."));
 				}
 				else if (result != ERROR_SUCCESS) {
-					lgc(Err, Format(TEXT("设置: 查询注册表值[%]失败!"), ToStr(result)));
+					lgc(Err, Printf(TEXT("设置: 查询注册表值[%s]失败!"), ToStr(result)));
 					RegCloseKey(hKey);
 					return false;
 				}
@@ -599,14 +666,14 @@ namespace Typical_Tool {
 				if (result == ERROR_SUCCESS) {
 					result = RegDeleteValue(hKey, valueName.c_str());
 					if (result != ERROR_SUCCESS) {
-						lgc(Err, Format(TEXT("删除注册表值[%]失败!"), ToStr(result)));
+						lgc(Err, Printf(TEXT("删除注册表值[%s]失败!"), ToStr(result)));
 						RegCloseKey(hKey);
 						return false;
 					}
 					lgc(Tip, TEXT("已[取消]开机自启动."));
 				}
 				else if (result != ERROR_FILE_NOT_FOUND) {
-					lgc(Err, Format(TEXT("取消: 查询注册表值[%]失败!"), ToStr(result)));
+					lgc(Err, Printf(TEXT("取消: 查询注册表值[%s]失败!"), ToStr(result)));
 					RegCloseKey(hKey);
 					return false;
 				}
@@ -620,19 +687,6 @@ namespace Typical_Tool {
 
 		//文件操作---------------------------------------------------------------------------------------------------------
 
-		//提取程序名
-		template<class T = bool>
-		bool ExtractExeName(Tstr& path) {
-			// 去掉 .exe 后缀
-			size_t exePos = path.find_last_of(TEXT(".exe"));
-			if (exePos != Tstr::npos && exePos == path.length() - 4) {
-				path = path.substr(0, exePos); // 去掉 .exe 后缀
-				return true;
-			}
-
-			return false; // 如果找不到路径分隔符，则返回整个路径
-		}
-
 		//提取程序目录名
 		template<class T = bool>
 		bool ExtractExeDirectoryName(Tstr& path) {
@@ -644,7 +698,29 @@ namespace Typical_Tool {
 			return false; // 如果找不到路径分隔符，则返回空字符串
 		}
 
-		//获取程序名
+		//提取程序名
+		template<class T = bool>
+		bool ExtractExeName(Tstr& path) {
+			size_t lastSepPos = path.find_last_of(TEXT("\\/"));
+			if (lastSepPos != Tstr::npos) {
+				path = path.substr(lastSepPos + 1, path.size()); // 不包括最后一个路径分隔符
+
+				// 去掉 .exe 后缀
+				size_t exePos = path.rfind(TEXT(".exe"));
+				if (exePos != Tstr::npos) {
+					path = path.substr(0, exePos); // 去掉 .exe 后缀
+					return true;
+				}
+				else {
+					return false; // 如果找不到路径分隔符，则返回整个路径
+				}
+			}
+			else {
+				return false;
+			}
+		}
+
+		//获取全路径程序名
 		template<class T = bool>
 		bool GetExePathName(Tstr& _ExeName) {
 			Tchar exePath[MAX_PATH];
@@ -653,29 +729,7 @@ namespace Typical_Tool {
 			DWORD length = GetModuleFileName(NULL, exePath, MAX_PATH);
 			_ExeName = exePath;
 			if (length > 0 && length < MAX_PATH) {
-				if (ExtractExeName(_ExeName)) {
-					lgc(Format(TEXT("当前可执行文件的名称: [%]"), _ExeName));
-				}
-				return true;
-			}
-			else {
-				lgc(TEXT("无法获取当前可执行文件的路径!"));
-				return false;
-			}
-		}
-
-		//获取程序父目录名
-		template<class T = bool>
-		bool GetExeParentDirectoryPathName(Tstr& _DirectoryName) {
-			Tchar exePath[MAX_PATH];
-
-			//获取当前程序的全路径
-			DWORD length = GetModuleFileName(NULL, exePath, MAX_PATH);
-			_DirectoryName = exePath;
-			if (length > 0 && length < MAX_PATH) {
-				if (ExtractExeDirectoryName(_DirectoryName)) {
-					lgc(Format(TEXT("当前程序目录路径名: [%]"), _DirectoryName));
-				}
+				lgc(Printf(TEXT("当前可执行文件的名称: [%s]"), _ExeName));
 				return true;
 			}
 			else {

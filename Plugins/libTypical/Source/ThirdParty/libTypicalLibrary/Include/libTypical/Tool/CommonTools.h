@@ -118,8 +118,8 @@ namespace Typical_Tool {
 				}
 			}
 			catch (const std::filesystem::filesystem_error& Error) {
-				LogRelease(Format(TEXT("FileSystem::CreateDirectory: 失败原因: { % }"), stow(Error.what())), Err);
-				LogRelease(Format(TEXT("FileSystem::CreateDirectory: 路径: { \n\tPath1: [%]\n\tPath2: [%]\n}"), 
+				LogRelease(Printf(TEXT("FileSystem::CreateDirectory: 失败原因: { %s }"), stow(Error.what())), Err);
+				LogRelease(Printf(TEXT("FileSystem::CreateDirectory: 路径: { \n\tPath1: [%s]\n\tPath2: [%s]\n}"), 
 					Error.path1().PathToStr(), Error.path2().PathToStr()), War);
 				Exists(TEXT("创建文件夹(Path1)"), Error.path1(), true, false);
 				Exists(TEXT("创建文件夹(Path2)"), Error.path2(), true, false);
@@ -149,8 +149,8 @@ namespace Typical_Tool {
 				}
 			}
 			catch (const std::filesystem::filesystem_error& Error) {
-				LogRelease(Format(TEXT("FileSystem::Delete: 失败原因: { % }"), stow(Error.what())), Err);
-				LogRelease(Format(TEXT("FileSystem::Delete: 路径: { \n\tPath1: [%]\n\tPath2: [%]\n}"),
+				LogRelease(Printf(TEXT("FileSystem::Delete: 失败原因: { %s }"), stow(Error.what())), Err);
+				LogRelease(Printf(TEXT("FileSystem::Delete: 路径: { \n\tPath1: [%s]\n\tPath2: [%s]\n}"),
 					Error.path1().PathToStr(), Error.path2().PathToStr()), War);
 				Exists(TEXT("删除文件/目录(Path1)"), Error.path1(), true);
 				Exists(TEXT("删除文件/目录(Path2)"), Error.path2(), true);
@@ -188,8 +188,8 @@ namespace Typical_Tool {
 				}
 			}
 			catch (const std::filesystem::filesystem_error& Error) {
-				LogRelease(Format(TEXT("FileSystem::Copy: 失败原因: { % }"), stow(Error.what()).c_str()), Err);
-				LogRelease(Format(TEXT("FileSystem::Copy: 路径: { \n\tPath1: [%]\n\tPath2: [%]\n}"),
+				LogRelease(Printf(TEXT("FileSystem::Copy: 失败原因: { %s }"), stow(Error.what()).c_str()), Err);
+				LogRelease(Printf(TEXT("FileSystem::Copy: 路径: { \n\tPath1: [%s]\n\tPath2: [%s]\n}"),
 					Error.path1().PathToStr(), Error.path2().PathToStr()), War);
 				Exists(TEXT("复制文件/目录(Path1)"), Error.path1(), true);
 				Exists(TEXT("复制文件/目录(Path2)"), Error.path2(), true);
@@ -215,8 +215,8 @@ namespace Typical_Tool {
 					std::filesystem::rename(this->Path, NewPathName);
 				}
 				catch (const std::filesystem::filesystem_error& Error) {
-					LogRelease(Format(TEXT("FileSystem::ReName: 失败原因: { % }"), stow(Error.what()).c_str()), Err);
-					LogRelease(Format(TEXT("FileSystem::ReName: 路径: { \n\tPath1: [%]\n\tPath2: [%]\n}"),
+					LogRelease(Printf(TEXT("FileSystem::ReName: 失败原因: { %s }"), stow(Error.what()).c_str()), Err);
+					LogRelease(Printf(TEXT("FileSystem::ReName: 路径: { \n\tPath1: [%s]\n\tPath2: [%s]\n}"),
 						Error.path1().PathToStr(), Error.path2().PathToStr()), War);
 					Exists(TEXT("重命名文件/目录(Path1)"), Error.path1(), true);
 					Exists(TEXT("重命名文件/目录(Path2)"), Error.path2(), true);
@@ -237,8 +237,8 @@ namespace Typical_Tool {
 					std::filesystem::rename(this->Path, NewPathName);
 				}
 				catch (const std::filesystem::filesystem_error& Error) {
-					LogRelease(Format(TEXT("FileSystem::ReName: 失败原因: { % }"), stow(Error.what()).c_str()), Err);
-					LogRelease(Format(TEXT("FileSystem::ReName: 路径: { \n\tPath1: [%]\n\tPath2: [%]\n}"),
+					LogRelease(Printf(TEXT("FileSystem::ReName: 失败原因: { %s }"), stow(Error.what()).c_str()), Err);
+					LogRelease(Printf(TEXT("FileSystem::ReName: 路径: { \n\tPath1: [%s]\n\tPath2: [%s]\n}"),
 						Error.path1().PathToStr(), Error.path2().PathToStr()), War);
 					Exists(TEXT("移动文件/目录(Path1)"), Error.path1(), true);
 					Exists(TEXT("移动文件/目录(Path2)"), Error.path2(), true);
@@ -264,8 +264,8 @@ namespace Typical_Tool {
 				std::filesystem::permissions(this->Path, _perms);
 			}
 			catch (const std::filesystem::filesystem_error& Error) {
-				LogRelease(Format(TEXT("FileSystem::SetPermissions: 失败原因: { % }"), stow(Error.what()).c_str()), Err);
-				LogRelease(Format(TEXT("FileSystem::SetPermissions: 路径: { \n\tPath1: [%]\n\tPath2: [%]\n}"),
+				LogRelease(Printf(TEXT("FileSystem::SetPermissions: 失败原因: { %s }"), stow(Error.what()).c_str()), Err);
+				LogRelease(Printf(TEXT("FileSystem::SetPermissions: 路径: { \n\tPath1: [%s]\n\tPath2: [%s]\n}"),
 					Error.path1().PathToStr(), Error.path2().PathToStr()), War);
 				Exists(TEXT("修改文件/目录权限(Path1)"), Error.path1(), true);
 				Exists(TEXT("修改文件/目录权限(Path2)"), Error.path2(), true);
@@ -284,7 +284,7 @@ namespace Typical_Tool {
 		* _IsRecursive: 是否递归
 		* DirectoryList: 默认为空(不获取文件列表的字符串) | 非空(清楚内容后, 写入文件列表的字符串)
 		*/
-		std::vector<std::filesystem::directory_entry> DirectoryIterator(bool _IsRecursive = false, 
+		std::vector<std::filesystem::directory_entry> DirectoryIterator(bool _IsRecursive = false,
 			std::shared_ptr<std::vector<std::filesystem::path>> DirectoryListStr = std::make_shared<std::vector<std::filesystem::path>>()
 		) {
 			std::vector<std::filesystem::directory_entry> List; //目录列表
@@ -322,8 +322,71 @@ namespace Typical_Tool {
 				}
 			}
 			catch (const std::filesystem::filesystem_error& Error) {
-				LogRelease(Format(TEXT("FileSystem::DirectoryIterator: 失败原因: { % }"), stow(Error.what()).c_str()), Err);
-				LogRelease(Format(TEXT("FileSystem::DirectoryIterator: 路径: { \n\tPath1: [%]\n\tPath2: [%]\n}"),
+				LogRelease(Printf(TEXT("FileSystem::DirectoryIterator: 失败原因: { %s }"), stow(Error.what()).c_str()), Err);
+				LogRelease(Printf(TEXT("FileSystem::DirectoryIterator: 路径: { \n\tPath1: [%s]\n\tPath2: [%s]\n}"),
+					Error.path1().PathToStr(), Error.path2().PathToStr()), War);
+				Exists(TEXT("遍历目录(Path1)"), Error.path1(), true);
+				Exists(TEXT("遍历目录(Path2)"), Error.path2(), true);
+
+				return std::vector< std::filesystem::directory_entry>();
+			}
+			catch (...) {
+				LogRelease(TEXT("FileSystem::DirectoryIterator: 其他错误!"), Err);
+				return std::vector< std::filesystem::directory_entry>();
+			}
+
+			return List;
+		}
+
+		//遍历目录: return 目录列表
+		/* 
+		* _IsRecursive: 是否递归
+		* DirectoryList: 默认为空(不获取文件列表的字符串) | 非空(清楚内容后, 写入文件列表的字符串)
+		*/
+		std::vector<std::filesystem::directory_entry> DirectoryIterator(bool _IsRecursive,  __int64& _FilePathSizeSum,
+			std::shared_ptr<std::vector<std::filesystem::path>> DirectoryListStr = std::make_shared<std::vector<std::filesystem::path>>()
+		) {
+			std::vector<std::filesystem::directory_entry> List; //目录列表
+
+			try {
+				if (_IsRecursive) { // 递归遍历
+					if (!DirectoryListStr->empty()) { //非空时: 获取文件列表的字符串
+						DirectoryListStr->clear(); //清空
+
+						for (const auto& entry : std::filesystem::recursive_directory_iterator(this->Path)) {
+							DirectoryListStr->push_back(entry.path());
+							List.push_back(entry);
+							_FilePathSizeSum += entry.file_size();
+						}
+					}
+					else {
+						for (const auto& entry : std::filesystem::recursive_directory_iterator(this->Path)) {
+							List.push_back(entry);
+							_FilePathSizeSum += entry.file_size();
+						}
+					}
+				}
+				else { // 非递归遍历
+					if (!DirectoryListStr->empty()) { //非空时: 获取文件列表的字符串
+						DirectoryListStr->clear(); //清空
+
+						for (const auto& entry : std::filesystem::directory_iterator(this->Path)) {
+							DirectoryListStr->push_back(entry.path());
+							List.push_back(entry);
+							_FilePathSizeSum += entry.file_size();
+						}
+					}
+					else {
+						for (const auto& entry : std::filesystem::directory_iterator(this->Path)) {
+							List.push_back(entry);
+							_FilePathSizeSum += entry.file_size();
+						}
+					}
+				}
+			}
+			catch (const std::filesystem::filesystem_error& Error) {
+				LogRelease(Printf(TEXT("FileSystem::DirectoryIterator: 失败原因: { %s }"), stow(Error.what()).c_str()), Err);
+				LogRelease(Printf(TEXT("FileSystem::DirectoryIterator: 路径: { \n\tPath1: [%s]\n\tPath2: [%s]\n}"),
 					Error.path1().PathToStr(), Error.path2().PathToStr()), War);
 				Exists(TEXT("遍历目录(Path1)"), Error.path1(), true);
 				Exists(TEXT("遍历目录(Path2)"), Error.path2(), true);

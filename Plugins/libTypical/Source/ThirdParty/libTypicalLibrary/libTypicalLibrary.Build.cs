@@ -22,6 +22,9 @@ public class libTypicalLibrary : ModuleRules
         {
             PublicDefinitions.Add("_WINDOWS");
 
+            bEnableExceptions = true; // 启用 C++ 异常处理
+            bUseRTTI = true; // 如果需要 RTTI，也可以启用
+
             PublicDefinitions.Add("_CRT_SECURE_NO_WARNINGS");
             PublicDefinitions.Add("_SILENCE_CXX17_CODECVT_HEADER_DEPRECATION_WARNING");
 

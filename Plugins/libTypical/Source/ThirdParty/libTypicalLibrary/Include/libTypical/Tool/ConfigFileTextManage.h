@@ -172,14 +172,14 @@ namespace Typical_Tool {
 				if (tempConfig != this->ConfigMap.end()) {
 					if (this->ShowManageLog) {
 						log(TEXT("GetConfigItem: 获取配置"));
-						log(tytl::Format(TEXT("  配置[%]"), _Config));
+						log(tytl::Printf(TEXT("  配置[%s]"), _Config));
 					}
 
 					auto tempConfigItem = tempConfig->second.find(_ConfigItem);
 					if (tempConfigItem != tempConfig->second.end()) {
 						if (this->ShowManageLog) {
-							log(tytl::Format(TEXT("    配置项 Key  [%]"), _ConfigItem));
-							log(tytl::Format(TEXT("    配置项 Value[%]"), tempConfigItem->second));
+							log(tytl::Printf(TEXT("    配置项 Key  [%s]"), _ConfigItem));
+							log(tytl::Printf(TEXT("    配置项 Value[%s]"), tempConfigItem->second));
 						}
 
 						return tempConfigItem->second;
@@ -198,8 +198,8 @@ namespace Typical_Tool {
 				auto tempConfigItem = _Config.find(_ConfigItem);
 				if (tempConfigItem != _Config.end()) {
 					if (this->ShowManageLog) {
-						log(tytl::Format(TEXT("    配置项 Key  [%]"), _ConfigItem));
-						log(tytl::Format(TEXT("    配置项 Value[%]"), tempConfigItem->second));
+						log(tytl::Printf(TEXT("    配置项 Key  [%s]"), _ConfigItem));
+						log(tytl::Printf(TEXT("    配置项 Value[%s]"), tempConfigItem->second));
 					}
 
 					return tempConfigItem->second;
@@ -217,7 +217,7 @@ namespace Typical_Tool {
 				if (tempConfig != this->ConfigMap.end()) {
 					if (this->ShowManageLog) {
 						log(TEXT("GetConfig: 获取配置"));
-						log(tytl::Format(TEXT("  配置[%]"), _Config));
+						log(tytl::Printf(TEXT("  配置[%s]"), _Config));
 					}
 
 					auto& tempConfigItemMap = tempConfig->second;
@@ -235,7 +235,7 @@ namespace Typical_Tool {
 			//	if (tempConfig != this->ConfigMap.end()) {
 			//		if (this->ShowManageLog) {
 			//			log(TEXT("operator[]: 获取配置"));
-			//			log(tytl::Format(TEXT("  配置[%]"), _Config));
+			//			log(tytl::Printf(TEXT("  配置[%s]"), _Config));
 			//		}
 
 			//		auto& tempConfigItemMap = tempConfig->second;
@@ -578,7 +578,7 @@ namespace Typical_Tool {
 				if (!this->FormatText) {
 					if (!_IsSureWrite) {
 						std::vector<Tstr> tempWriteConfig_Vec;
-						if (this->Format(tempWriteConfig_Vec)) {
+						if (this->Printf(tempWriteConfig_Vec)) {
 							if (!WriteFile(this->ConfigFilePath, tempWriteConfig_Vec)) {
 								log(TEXT("WriteConfigFile: 可能没有对应的文件, 或文件正在被使用!"), War);
 								return false;
@@ -616,7 +616,7 @@ namespace Typical_Tool {
 					}
 					else { //强制写入
 						std::vector<Tstr> tempWriteConfig_Vec;
-						this->Format(tempWriteConfig_Vec); //无视格式化是否成功
+						this->Printf(tempWriteConfig_Vec); //无视格式化是否成功
 						if (!WriteFile(this->ConfigFilePath, tempWriteConfig_Vec)) {
 							log(TEXT("WriteConfigFile: 可能没有对应的文件, 或文件正在被使用!"), War);
 							return false;
@@ -732,7 +732,7 @@ namespace Typical_Tool {
 		private:
 			//将文本格式化为配置
 			template<class T = bool>
-			bool Format(std::vector<Tstr>& _FormatMap)
+			bool Printf(std::vector<Tstr>& _FormatMap)
 			{
 				bool FirstLineText = true; //第一行文本
 				//int TextLine = 1; //文本行数
@@ -746,7 +746,7 @@ namespace Typical_Tool {
 				if (!this->ConfigMap.empty())
 				{
 					if (this->ShowManageLog) {
-						log(TEXT("Format: 格式化文本输出开始..."), Tip);
+						log(TEXT("Printf: 格式化文本输出开始..."), Tip);
 					}
 					for (auto tempConfig = this->ConfigMap.begin(); tempConfig != this->ConfigMap.end(); tempConfig++)
 					{
@@ -789,7 +789,7 @@ namespace Typical_Tool {
 						}
 					}
 					if (this->ShowManageLog) {
-						log(TEXT("Format: 格式化文本输出结束!"), Tip);
+						log(TEXT("Printf: 格式化文本输出结束!"), Tip);
 					}
 
 					return true;
@@ -798,7 +798,7 @@ namespace Typical_Tool {
 				{
 					_FormatMap.push_back(TEXT(""));
 
-					log(TEXT("Format: 配置项不足以形成格式!"), War);
+					log(TEXT("Printf: 配置项不足以形成格式!"), War);
 					ConfigFormatSample();
 					return false;
 				}

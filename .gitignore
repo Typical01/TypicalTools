@@ -4,6 +4,7 @@ Binaries/
 DerivedDataCache/
 Intermediate/
 Saved/
+Build/
 
 build/
 build_Unix/

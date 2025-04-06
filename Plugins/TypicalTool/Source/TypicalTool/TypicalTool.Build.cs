@@ -26,6 +26,7 @@ public class TypicalTool : ModuleRules
 			new string[]
 			{
 				"Core",
+                "UMG",
                 "Json",
                 "JsonUtilities",
 				// ... add other public dependencies that you statically link with here ...

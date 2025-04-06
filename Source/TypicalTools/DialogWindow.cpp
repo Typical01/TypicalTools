@@ -22,15 +22,6 @@ DialogWindow::~DialogWindow()
 
 TSharedRef<SWindow> CreateToolDialog(UUserWidget* _MainMenuWidget, FString _DialogTitleName, int32 _WindowWidth, int32 _WindowHeight)
 {
-    // 获取主窗口
-    TSharedPtr<SWindow> MainWindow = FSlateApplication::Get().GetActiveTopLevelWindow();
-    // 隐藏/关闭主窗口
-    if (MainWindow.IsValid())
-    {
-        //MainWindow->RequestDestroyWindow();
-        MainWindow->HideWindow();
-    }
-
     // 创建独立对话框窗口
     TSharedRef<SWindow> DialogWindow = SNew(SWindow)
         .Title(FText::FromString(_DialogTitleName))

@@ -5,10 +5,11 @@
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
 #include "Blueprint/IUserObjectListEntry.h"
+#include "Components/ProgressBar.h"
 
 #include "Components/ListView.h"
 #include "SettingWidget.h"
-#include "Components/ComboBoxString.h"
+
 
 #include "EntryWidget.generated.h"
 
@@ -21,16 +22,15 @@ class TYPICALTOOLS_API UEntryWidget : public UUserWidget, public IUserObjectList
 	GENERATED_BODY()
 
 public:
+	~UEntryWidget();
+
+public:
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	USettingWidget* SettingWidget; //设置UMG
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	UShellConfigItem* ShellConfigItem; //ShellConfig项
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
-	UComboBoxString* ComboBoxStringShellConfigMode; //ShellConfig: 模式
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	int32 ShellConfigItemIndex; //ListView<ShellConfigItem> 索引
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	USettingWidget* SettingWidget; //SettingWidget
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UListView* ListViewShellConfig; //ListView
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	UShellConfigItem* ShellConfigItem; //ShellConfigItem
+	UProgressBar* ProgressBarItem; //进度条
 
 	void OutputLog();
 
@@ -38,9 +38,10 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Shell")
 	void Init(UUserWidget* _SettingWidget);
 
-	virtual void NativeOnListItemObjectSet(UObject* _ListItemObject) override;
-
-public:
 	UFUNCTION(BlueprintCallable, Category = "Shell")
-	void SetListViewConfigItemMode(FString _ShellConfigItemMode);
+	void OnBackupButton();
+
+
+	UFUNCTION(BlueprintCallable, Category = "Shell")
+	void MainTaskProgressBarShow(bool bShow);
 };

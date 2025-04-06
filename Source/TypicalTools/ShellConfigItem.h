@@ -4,6 +4,10 @@
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
+
+#include "libTypical/Tool.h"
+#include "TypicalTool/Public/Tools.h"
+
 #include "ShellConfigItem.generated.h"
 
 /**
@@ -15,31 +19,39 @@ class TYPICALTOOLS_API UShellConfigItem : public UObject
 	GENERATED_BODY()
 
 public:
-    UShellConfigItem() : Super() {};
-    
-    UFUNCTION(BlueprintCallable, Category = "Shell")
-    void Initialize(FString _ItemName, FString _File, FString _Argument, FString _Mode, bool _ShowWindow, bool _MenuButton);
-    UFUNCTION(BlueprintCallable, Category = "Shell")
-    void Defualut();
+    UShellConfigItem();
 
     UFUNCTION(BlueprintCallable, Category = "Shell")
-    static FString ConvertIntToShellMode(int32 _ShellMode);
+    void Defualut();
     UFUNCTION(BlueprintCallable, Category = "Shell")
-    static int32 ConvertShellModeToInt(FString _ShellMode);
+    bool Equals(const UShellConfigItem* Other) const;
+    TSharedPtr<FJsonObject> SaveConfigFile();
+    void LoadConfigFile(const TSharedPtr<FJsonObject>& _SaveData);
 
     void OutputLog();
 
 public:
     UPROPERTY(BlueprintReadWrite, Category = "ListItem")
-    FString ItemName;
+    FString OperationName; //操作名
     UPROPERTY(BlueprintReadWrite, Category = "ListItem")
-    FString File;
+    FString SourceFile; //源文件(夹)
     UPROPERTY(BlueprintReadWrite, Category = "ListItem")
-    FString Argument;
+    FString DestinationPath; //目的地路径
     UPROPERTY(BlueprintReadWrite, Category = "ListItem")
-    FString Mode;
+    float Progress; //进度
     UPROPERTY(BlueprintReadWrite, Category = "ListItem")
-    bool ShowWindow;
+    bool StartBackup; //启动时备份
     UPROPERTY(BlueprintReadWrite, Category = "ListItem")
-    bool MenuButton;
+    bool SetPermissions; //设置文件/夹权限
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    int64 SourceFileSizeSum; //源文件的总大小
+
+    UPROPERTY(EditAnywhere, BlueprintReadWrite)
+    int32 ShellConfigItemIndex; //当前项的索引
+
+    std::vector<std::filesystem::directory_entry> SourceFileDirectoryList; //源文件夹列表
+    std::shared_ptr<std::vector<std::filesystem::path>> SourceFilePathList; //源文件路径列表
+    std::shared_ptr<std::vector<std::filesystem::path>> DestinationPathList; //目的地文件路径列表
+
+    FGuid ItemID;
 };

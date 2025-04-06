@@ -26,40 +26,38 @@ public:
 	UUserWidget* MainMenuWidget;
 
 public:
-	TSharedPtr<SWindow> DialogWindowMain;
+	TSharedPtr<SWindow> MainWindow;
+	TSharedPtr<SWindow> DialogMainWindow;
+	FTimerHandle TimerHandle;
 
 public:
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
-	int32 WindowWidth = 440;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
-	int32 WindowHeight = 660;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
-	FString DialogTitleName = { TEXT("Test") };
+	int32 MainWindowWidth = 300;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
+	int32 MainWindowHeight = 189;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
+	int32 DialogWindowWidth = 500;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
+	int32 DialogWindowHeight = 900;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
+	float MainWindowHideInterval = 0.1f; //主窗口的隐藏间隔
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
 	TEnumAsByte<EWindowMode::Type> Fullscreen = EWindowMode::Windowed;
 
 	TSharedPtr<FJsonObject> ToolsConfig;
 
-	class UTrayManager* TrayManager;
-
 public:
 	~UTools_GameInstance();
 	virtual void OnStart();
-
+	virtual void Shutdown();
 
 public:
 	UFUNCTION(BlueprintCallable)
-	void DestroyDialogWindow();
-
-	UFUNCTION(BlueprintCallable)
-	void HideDialogWindow();
+	void ExitGame();
+	void OnTimer();
 
 	void CreateConfigFile();
 	void SaveConfigFile();
 
-public:
-	// 创建托盘图标
-	UFUNCTION(BlueprintCallable, Category = "Tray")
-	void CreateTrayIcon();
 };

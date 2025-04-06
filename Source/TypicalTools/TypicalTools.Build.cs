@@ -42,7 +42,12 @@ public class TypicalTools : ModuleRules
         if (Target.Platform == UnrealTargetPlatform.Win64) //Win
         {
             PublicDefinitions.Add("_WINDOWS");
+
+            bEnableExceptions = true; // 启用 C++ 异常处理
+            bUseRTTI = true; // 如果需要 RTTI，也可以启用
+
             PublicAdditionalLibraries.Add("Advapi32.lib");
+            PublicAdditionalLibraries.Add("Shcore.lib");
         }
 
 
@@ -52,7 +57,7 @@ public class TypicalTools : ModuleRules
 
 
         PublicDependencyModuleNames.AddRange(new string[] { 
-            "Core", "CoreUObject", "Engine", "InputCore", "EnhancedInput", "UMG", "Slate", "SlateCore", "Json", "JsonUtilities", "TypicalTool", "libTypicalLibrary"
+            "Core", "CoreUObject", "Engine", "UMG", "Slate", "SlateCore", "Json", "JsonUtilities", "TypicalTool", "libTypicalLibrary"
         });
 
 		PrivateDependencyModuleNames.AddRange(new string[] {  });

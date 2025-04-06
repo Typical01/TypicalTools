@@ -3,6 +3,8 @@
 
 #include "SettingWidget.h"
 
+#include "Engine/Engine.h"
+
 #include "EntryWidget.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/GameInstance.h"
@@ -10,23 +12,52 @@
 #include "TypicalTool/Public/Tools.h"
 #include "Tools_GameInstance.h"
 #include "SettingItem.h"
-#include "ToolsMain.h"
 
 
+
+
+USettingWidget::USettingWidget(const FObjectInitializer& ObjectInitializer)
+    : Super(ObjectInitializer)
+{
+}
 
 USettingWidget::~USettingWidget()
 {
-    Tools_GameInstance = nullptr;
+    UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::~USettingWidget: 析构!")), FColor::Red);
 }
-
 
 void USettingWidget::InitializeListView()
 {
-    if (SettingItem) {
-        SettingItem->ResolutionVec = GetAllSupportedResolutions();
+    LoadSettingConfigFile();
+
+    /*if (SettingItem) {
+        SettingItem->DispalyDevice = SettingItem->GetAllSupportedResolutions();
+        SettingItem->DispalyDevice.find(TEXT(""));
+    }*/
+
+    if (!ListViewShellConfig) {
+        UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::InitializeListView: ListViewShellConfig 无效!")), FColor::Red);
     }
 
-    //LoadSettingConfigFile();
+    MainTaskProgressBarShow(true);
+
+    int32 Index = 1;
+    for (auto tempItem : ListViewShellConfig->GetListItems()) {
+        UShellConfigItem* tempShellConfigItem = Cast<UShellConfigItem>(tempItem);
+        if (tempShellConfigItem) {
+            if (tempShellConfigItem->StartBackup) {
+                StartBackup(tempShellConfigItem);
+                MainTaskProgress = static_cast<float>(Index) / ListViewShellConfig->GetNumItems() * 50.0f;
+            }
+        }
+        else {
+            UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::InitializeListView: tempShellConfigItem 无效! 索引[%d]"), Index), FColor::Red);
+        }
+        Index++;
+    }
+
+    MainTaskProgress = 100.f;
+    MainTaskProgressBarShow(false);
 }
 
 int32 USettingWidget::FindListViewItem(UObject* _Item)
@@ -35,96 +66,65 @@ int32 USettingWidget::FindListViewItem(UObject* _Item)
         return ListViewShellConfig->GetListItems().Find(_Item);
     }
     else {
-        return int32(INDEX_NONE);
+        UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::FindListViewItem: ListViewShellConfig 无效!")), FColor::Red);
+        return INDEX_NONE;
     }
 }
 
 UObject* USettingWidget::FindListViewIndex(int32 _Index)
 {
-    if (ListViewShellConfig) {
-        return ListViewShellConfig->GetItemAt(_Index);
+    if (!ListViewShellConfig->GetListItems().IsEmpty()) {
+        if (ListViewShellConfig->GetListItems().Num() > _Index) {
+            return ListViewShellConfig->GetListItems()[_Index];
+        }
+        else {
+            UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::FindListViewIndex: 没有找到对应索引[%d]对象!"), _Index));
+            return nullptr;
+        }
     }
     else {
+        UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::FindListViewIndex: ListViewShellConfig 无效!")), FColor::Red);
         return nullptr;
     }
 }
 
-void USettingWidget::DeleteListViewItem(UObject* _Item)
+void USettingWidget::DeleteListViewIndexItem(int32 _Index)
 {
-    if (ListViewShellConfig) {
-        ListViewShellConfig->RemoveItem(_Item);
+    if (!ListViewShellConfig->GetListItems().IsEmpty()) {
+        if (ListViewShellConfig->GetListItems().Num() > _Index) {
+            UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::FindListViewIndex: 删除前: 当前数组大小[%d]!"), ListViewShellConfig->GetListItems().Num()));
+
+            DeleteListViewItem(ListViewShellConfig->GetListItems()[_Index]);
+
+            for (int32 i = _Index; i < ListViewShellConfig->GetListItems().Num(); i++) {
+                UShellConfigItem* tempShellConfigItem = Cast<UShellConfigItem>(ListViewShellConfig->GetListItems()[i]);
+                tempShellConfigItem->ShellConfigItemIndex = i;
+            }
+            UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::FindListViewIndex: 删除后: 当前数组大小[%d]!"), ListViewShellConfig->GetListItems().Num()));
+        }
+        else {
+            UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::FindListViewIndex: 没有找到对应索引[%d]对象!"), _Index));
+        }
     }
     else {
-        UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::DeleteListViewItem: ListViewItem 删除失败!")));
+        UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::FindListViewIndex: ListViewShellConfig 无效!")), FColor::Red);
     }
 }
 
 void USettingWidget::OnApplyButton()
 {
-    OutputLog();
+    MainTaskProgressBarShow(true);
 
-    if (ToolsMain) {
-        ToolsMain->LoadShellConfig();
-        ToolsMain->LoadToolsMenu();
-    }
+    ComputeFileCount();
+    OutputLog();
 
     SaveSettingConfigFile();
 
     if (Tools_GameInstance) {
         Tools_GameInstance->SaveConfigFile();
     }
-
-    //if (SettingItem) {
-    //    //创建对象: 基本设置
-    //    TSharedPtr<FJsonObject> ItemObject_BaseSetting = MakeShareable(new FJsonObject());
-    //    ItemObject_BaseSetting->SetBoolField(TEXT("注册表开机自启动"), bAutoStarting);
-    //    ItemObject_BaseSetting->SetNumberField(TEXT("初始屏幕分辨率宽"), FCString::Atoi(*SettingItem->BeginResolutionWidth));
-    //    ItemObject_BaseSetting->SetNumberField(TEXT("初始屏幕分辨率高"), FCString::Atoi(*SettingItem->BeginResolutionHeight));
-    //    ItemObject_BaseSetting->SetNumberField(TEXT("目标屏幕分辨率宽"), FCString::Atoi(*SettingItem->TargetResolutionWidth));
-    //    ItemObject_BaseSetting->SetNumberField(TEXT("目标屏幕分辨率高"), FCString::Atoi(*SettingItem->TargetResolutionHeight));
-
-    //    Tools_GameInstance->ToolsConfig->SetObjectField(TEXT("基本设置"), ItemObject_BaseSetting);
-    //}
-
-    //if (ListViewShellConfig) {
-    //    for (auto tempShellConfigItem : ListViewShellConfig->GetListItems()) {
-    //        auto* ShellConfigItem = Cast<UShellConfigItem>(tempShellConfigItem);
-
-    //        //创建对象: ShellConfig
-    //        TSharedPtr<FJsonObject> ItemObject_ShellConfig = MakeShareable(new FJsonObject());
-    //        ItemObject_ShellConfig->SetStringField(TEXT("文件"), ShellConfigItem->File);
-    //        ItemObject_ShellConfig->SetStringField(TEXT("参数"), ShellConfigItem->Argument);
-    //        ItemObject_ShellConfig->SetStringField(TEXT("模式"), FString::FromInt(ShellConfigItem->Mode));
-    //        ItemObject_ShellConfig->SetBoolField(TEXT("显示窗口"), ShellConfigItem->ShowWindow);
-    //        ItemObject_ShellConfig->SetBoolField(TEXT("菜单按键"), ShellConfigItem->MenuButton);
-
-    //        Tools_GameInstance->ToolsConfig->SetObjectField(ShellConfigItem->ItemName, ItemObject_ShellConfig);
-    //    }
-    //}
-}
-
-void USettingWidget::OnDestroyListViewWidget(UObject* _Item)
-{
-    if (ListViewShellConfig) {
-        UEntryWidget* tempEntry = Cast<UEntryWidget>(ListViewShellConfig->GetEntryWidgetFromItem(_Item));
-        ListViewShellConfig->RemoveItem(_Item); 
-        ListViewShellConfig->RegenerateAllEntries();
-
-        //tempEntry = nullptr;
-
-        //for (UObject* Item : ListViewShellConfig->GetListItems())
-        //{
-        //    // 如果数据项无效，则移除并销毁条目控件
-        //    if (!Item)
-        //    {
-        //        UEntryWidget* DeleteEntry = Cast<UEntryWidget>(ListViewShellConfig->GetEntryWidgetFromItem(_Item));
-        //        DeleteEntry->RemoveFromParent();
-        //        DeleteEntry->ConditionalBeginDestroy();
-        //        ListViewShellConfig->RegenerateAllEntries();
-        //    }
-        //}
-        //tempEntry->RemoveFromParent();
-    }
+ 
+    MainTaskProgressBarShow(false);
 }
 
 void USettingWidget::OutputLog()
@@ -150,11 +150,6 @@ void USettingWidget::OutputLog()
         }
     }
     tempCount = 0;
-
-    if (SettingItem) {
-        UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::OutputLog: 设置项SettingItem")), FColor::Yellow);
-        SettingItem->OutputLog();
-    }
 }
 
 UShellConfigItem* USettingWidget::AddListViewConfigItem()
@@ -166,16 +161,32 @@ UShellConfigItem* USettingWidget::AddListViewConfigItem()
         ListViewShellConfig->AddItem(ConfigItem);
     }
     else {
-        UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::AddListViewConfigItem(): ListViewShellConfig 无效!")));
-        UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::AddListViewConfigItem(): 添加列表视图项失败!")));
+        UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::AddListViewConfigItem: ListViewShellConfig 无效!")));
+        UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::AddListViewConfigItem: 添加列表视图项失败!")), FColor::Red);
     }
 
     return ConfigItem;
 }
 
+void USettingWidget::DeleteListViewItem(UObject* _Item)
+{
+    if (ListViewShellConfig && !ListViewShellConfig->GetListItems().IsEmpty()) {
+        if (ListViewShellConfig->GetListItems().Contains(_Item)) {
+            ListViewShellConfig->RemoveItem(_Item);
+            _Item = nullptr;
+        }
+        else {
+            UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::DeleteListViewItem: ListViewShellConfig: 没有该项!")));
+        }
+    }
+    else {
+        UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::DeleteListViewItem: ListViewItem 删除失败!")), FColor::Red);
+    }
+}
+
 int32 USettingWidget::GetListViewConfigItemIndex(UObject* _Item)
 {
-    if (ListViewShellConfig) {
+    if (!ListViewShellConfig->GetListItems().IsEmpty()) {
         int32 tempIndex = ListViewShellConfig->GetListItems().Find(_Item);
         if (tempIndex != INDEX_NONE) {
             return tempIndex;
@@ -185,27 +196,16 @@ int32 USettingWidget::GetListViewConfigItemIndex(UObject* _Item)
         }
     }
     else {
-        UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::GetListViewConfigItemIndex: ListViewShellConfig 无效!")));
+        UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::GetListViewConfigItemIndex: ListViewShellConfig 无效!")), FColor::Red);
         return int32(INDEX_NONE);
-    }
-}
-
-UUserWidget* USettingWidget::GetListViewConfigItemEntry(UObject* _Item)
-{
-    if (ListViewShellConfig) {
-        return Cast<UUserWidget>(ListViewShellConfig->GetEntryWidgetFromItem(_Item));
-    }
-    else {
-        UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::GetListViewConfigItemIndex: ListViewShellConfig 无效!")));
-        return nullptr;
     }
 }
 
 int32 USettingWidget::GetListViewConfigItemEnd()
 {
-    if (ListViewShellConfig) {
-        int32 tempIndex = GetListViewConfigItemIndex(ListViewShellConfig->GetItemAt(ListViewShellConfig->GetNumItems() - 1));
-        if (tempIndex != INDEX_NONE) {
+    if (!ListViewShellConfig->GetListItems().IsEmpty()) {
+        int32 tempIndex = ListViewShellConfig->GetListItems().Num() - 1;
+        if (tempIndex != -1) {
             return tempIndex;
         }
         else {
@@ -213,7 +213,7 @@ int32 USettingWidget::GetListViewConfigItemEnd()
         }
     }
     else {
-        UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::GetListViewConfigItemIndex: ListViewShellConfig 无效!")));
+        UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::GetListViewConfigItemEnd: ListViewShellConfig 无效!")), FColor::Red);
         return int32(INDEX_NONE);
     }
 }
@@ -224,42 +224,31 @@ void USettingWidget::SaveSettingConfigFile()
         if (Tools_GameInstance->ToolsConfig.IsValid()) {
             TSharedPtr<FJsonObject> NewToolsConfig = MakeShareable(new FJsonObject());
 
-            if (ListViewShellConfig) {
+            if (!ListViewShellConfig->GetListItems().IsEmpty()) {
                 //保存到配置文件: ShellConfigItem
                 for (auto tempJsonObject : ListViewShellConfig->GetListItems()) {
                     UShellConfigItem* ShellConfigItem = Cast<UShellConfigItem>(tempJsonObject);
+                    ShellConfigItem->Defualut();
 
                     TSharedPtr<FJsonObject> ShellConfigItemObject = MakeShareable(new FJsonObject());
-                    ShellConfigItemObject->SetStringField(TEXT("文件"), ShellConfigItem->File);
-                    ShellConfigItemObject->SetStringField(TEXT("参数"), ShellConfigItem->Argument);
-                    ShellConfigItemObject->SetStringField(TEXT("模式"), ShellConfigItem->Mode);
-                    ShellConfigItemObject->SetBoolField(TEXT("显示窗口"), ShellConfigItem->ShowWindow);
-                    ShellConfigItemObject->SetBoolField(TEXT("菜单按键"), ShellConfigItem->MenuButton);
+                    ShellConfigItemObject->SetStringField(TEXT("源文件"), ShellConfigItem->SourceFile);
+                    ShellConfigItemObject->SetStringField(TEXT("目的地路径"), ShellConfigItem->DestinationPath);
+                    ShellConfigItemObject->SetBoolField(TEXT("启动时备份"), ShellConfigItem->StartBackup);
+                    ShellConfigItemObject->SetBoolField(TEXT("修改权限"), ShellConfigItem->SetPermissions);
 
-                    NewToolsConfig->SetObjectField(ShellConfigItem->ItemName, ShellConfigItemObject);
+                    ShellConfigItemObject->SetObjectField(TEXT("有效路径"), ShellConfigItem->SaveConfigFile());
+
+                    NewToolsConfig->SetObjectField(ShellConfigItem->OperationName, ShellConfigItemObject);
                 }
             }
             else {
-                UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::SaveSettingConfigFile(): ListViewShellConfig 无效!")));
-                UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::SaveSettingConfigFile(): 添加列表视图项失败!")));
+                UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::SaveSettingConfigFile: ListViewShellConfig 无效!")), FColor::Red);
+                UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::SaveSettingConfigFile: 添加列表视图项失败!")));
             }
 
-            if (SettingItem) {
-                //保存到配置文件: 基本设置
-                TSharedPtr<FJsonObject> BaseSettingObject = MakeShareable(new FJsonObject());
-
-                BaseSettingObject->SetBoolField(TEXT("注册表开机自启动"), bAutoStarting);
-                BaseSettingObject->SetStringField(TEXT("初始屏幕分辨率宽"), SettingItem->BeginResolutionWidth);
-                BaseSettingObject->SetStringField(TEXT("初始屏幕分辨率高"), SettingItem->BeginResolutionHeight);
-                BaseSettingObject->SetStringField(TEXT("目标屏幕分辨率宽"), SettingItem->TargetResolutionWidth);
-                BaseSettingObject->SetStringField(TEXT("目标屏幕分辨率高"), SettingItem->TargetResolutionHeight);
-
-                NewToolsConfig->SetObjectField(TEXT("基本设置"), BaseSettingObject);
-            }
-            else {
-                UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::SaveSettingConfigFile(): SettingItem 无效!")));
-                UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::SaveSettingConfigFile(): 初始化分辨率失败!")));
-            }
+            TSharedPtr<FJsonObject> BaseSettingObject = MakeShareable(new FJsonObject());
+            BaseSettingObject->SetBoolField(TEXT("注册表开机自启动"), bAutoStarting);
+            NewToolsConfig->SetObjectField(TEXT("基本设置"), BaseSettingObject);
 
             //覆盖配置
             Tools_GameInstance->ToolsConfig = NewToolsConfig;
@@ -269,68 +258,215 @@ void USettingWidget::SaveSettingConfigFile()
 
 void USettingWidget::LoadSettingConfigFile()
 {
-    UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::LoadSettingConfigFile(): 加载设置的配置文件!")), FColor::Yellow);
-
-    //组合框: 字符串, 初始化
-    //ComboBoxStringBeginResolutionWidth->ClearOptions();
-    //ComboBoxStringBeginResolutionHeight->ClearOptions();
-    //ComboBoxStringTargetResolutionWidth->ClearOptions();
-    //ComboBoxStringTargetResolutionHeight->ClearOptions();
+    UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::LoadSettingConfigFile: 加载设置的配置文件!")), FColor::Yellow);
 
     int32 tempIndex = 0;
     if (Tools_GameInstance) {
         if (Tools_GameInstance->ToolsConfig.IsValid()) {
-            UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::LoadSettingConfigFile(): 开始遍历 ToolsConfig!")), FColor::Yellow);
+            UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::LoadSettingConfigFile: 开始遍历 ToolsConfig!")), FColor::Yellow);
             for (auto& tempJsonObject : Tools_GameInstance->ToolsConfig->Values) {
-                UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::LoadSettingConfigFile(): ToolsConfig[%d]"), ++tempIndex), FColor::Yellow);
+                UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::LoadSettingConfigFile: ToolsConfig[%d]"), ++tempIndex), FColor::Yellow);
                 FString& Key = tempJsonObject.Key;
                 TSharedPtr<FJsonValue>& Value = tempJsonObject.Value;
 
                 //从配置文件加载: 基本设置
-                if (Key.Equals(TEXT("基本设置"))) {
-                    TSharedPtr<FJsonObject> BaseSettingObject = Value->AsObject();
+                UShellConfigItem* ConfigItem = NewObject<UShellConfigItem>();
+                ConfigItem->Defualut();
+                ConfigItem->OperationName = Key;
 
-                    if (SettingItem) {
-                        bAutoStarting = BaseSettingObject->GetBoolField(TEXT("注册表开机自启动"));
-                        SettingItem->BeginResolutionWidth = BaseSettingObject->GetStringField(TEXT("初始屏幕分辨率宽"));
-                        SettingItem->BeginResolutionHeight = BaseSettingObject->GetStringField(TEXT("初始屏幕分辨率高"));
-                        SettingItem->TargetResolutionWidth = BaseSettingObject->GetStringField(TEXT("目标屏幕分辨率宽"));
-                        SettingItem->TargetResolutionHeight = BaseSettingObject->GetStringField(TEXT("目标屏幕分辨率高"));
-                    }
-                    else {
-                        UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::LoadSettingConfigFile(): SettingItem 无效!")));
-                        UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::LoadSettingConfigFile(): 初始化分辨率失败!")));
-                    }
-                }
-                else {
-                    UShellConfigItem* ConfigItem = NewObject<UShellConfigItem>();
-                    ConfigItem->ItemName = Key;
+                TSharedPtr<FJsonObject> OtherConfigItemObject = Value->AsObject();
+                ConfigItem->SourceFile = OtherConfigItemObject->GetStringField(TEXT("源文件"));
+                ConfigItem->DestinationPath = OtherConfigItemObject->GetStringField(TEXT("目的地路径"));
+                ConfigItem->StartBackup = OtherConfigItemObject->GetBoolField(TEXT("启动时备份"));
+                ConfigItem->SetPermissions = OtherConfigItemObject->GetBoolField(TEXT("修改权限"));
 
-                    TSharedPtr<FJsonObject> OtherConfigItemObject = Value->AsObject();
-                    ConfigItem->File = OtherConfigItemObject->GetStringField(TEXT("文件"));
-                    ConfigItem->Argument = OtherConfigItemObject->GetStringField(TEXT("参数"));
-                    ConfigItem->Mode = OtherConfigItemObject->GetStringField(TEXT("模式"));
-                    ConfigItem->ShowWindow = OtherConfigItemObject->GetBoolField(TEXT("显示窗口"));
-                    ConfigItem->MenuButton = OtherConfigItemObject->GetBoolField(TEXT("菜单按键"));
-                    UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::LoadSettingConfigFile(): UShellConfigItem 添加中...")), FColor::Yellow);
+                ConfigItem->LoadConfigFile(OtherConfigItemObject->GetObjectField(TEXT("有效路径")));
 
-                    //从配置文件加载 ShellConfigItem
-                    if (ListViewShellConfig) {
-                        ListViewShellConfig->AddItem(ConfigItem);
-                        UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::LoadSettingConfigFile(): UShellConfigItem 添加成功!")), FColor::Yellow);
-                    }
-                    else {
-                        UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::LoadSettingConfigFile(): ListViewShellConfig 无效!")));
-                        UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::LoadSettingConfigFile(): 添加列表视图项失败!")));
-                    }
-                }
+                UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::LoadSettingConfigFile: UShellConfigItem 添加中...")), FColor::Yellow);
+
+                //从配置文件加载 ShellConfigItem
+                ListViewShellConfig->AddItem(ConfigItem);
+
+                UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::LoadSettingConfigFile: UShellConfigItem[%s] 添加成功!"), *Key), FColor::Yellow);
             }
         }
         else {
-            UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::LoadSettingConfigFile: Tools_GameInstance->ToolsConfig 无效!")));
+            UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::LoadSettingConfigFile: Tools_GameInstance->ToolsConfig 无效!")), FColor::Red);
         }
     }
     else {
-        UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::LoadSettingConfigFile: Tools_GameInstance 无效!")));
+        UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::LoadSettingConfigFile: Tools_GameInstance 无效!")), FColor::Red);
+        UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::LoadSettingConfigFile: SettingWidget 配置加载失败!")), FColor::Red);
     }
+}
+
+void USettingWidget::MainTaskProgressBarShow(bool bShow)
+{
+    if (ProgressBarMainTask) {
+        if (bShow) {
+            ProgressBarMainTask->SetVisibility(ESlateVisibility::Visible);
+        }
+        else {
+            ProgressBarMainTask->SetVisibility(ESlateVisibility::Hidden);
+            MainTaskProgress = -1.f;
+        }
+    }
+    else {
+        UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::MainTaskProgressBarShow: ProgressBarMainTask 无效!")), FColor::Red);
+    }
+}
+
+bool USettingWidget::IsVaildFilePath(FString& _FilePath)
+{
+    tytl::FileSystem FileBackup(*_FilePath);
+
+    return std::filesystem::exists(FileBackup.GetPath());
+}
+
+TArray<FString> USettingWidget::StringManage(FString& _FilePath)
+{
+    //FString CleanStr = _FilePath
+    //    .Replace(TEXT("-"), TEXT(""))
+    //    .Replace(TEXT("\n"), TEXT(" ")); // 移除所有 "-"/"\n" 符号
+
+    TArray<FString> ResultArray; 
+    _FilePath.ParseIntoArray(ResultArray, TEXT("|")); // 按空格分割
+
+    ResultArray.RemoveAll([](const FString& Str) { return Str.IsEmpty(); }); // 移除可能的空字符串（处理连续空格）
+
+    return ResultArray;
+}
+
+bool USettingWidget::FilePathManage(FString& _FilePath, UShellConfigItem* _ListViewItem)
+{
+    if (!IsVaildFilePath(_FilePath)) { //无效路径
+        UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::FilePathManage: 无效路径[%s]!"), *_FilePath), FColor::Red);
+
+        return false;
+    }
+    else { //有效路径
+        if (_ListViewItem) {
+            tytl::FileSystem FileBackup(*_FilePath);
+
+            if (std::filesystem::is_directory(FileBackup.GetPath())) { //目录
+                //遍历目录
+                _ListViewItem->SourceFileDirectoryList = FileBackup.DirectoryIterator(false, _ListViewItem->SourceFileSizeSum, _ListViewItem->SourceFilePathList);
+            }
+            else { //其他: 链接字符/普通文件
+                _ListViewItem->SourceFilePathList->push_back(FileBackup.GetPath());
+                _ListViewItem->SourceFileSizeSum += std::filesystem::file_size(FileBackup.GetPath());
+            }
+        }
+        else {
+            UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::FilePathManage: 无效 ShellConfigItem对象! 路径[%s]"), *_FilePath), FColor::Red);
+            return false;
+        }
+
+        return true;
+    }
+}
+
+void USettingWidget::ComputeFileCount()
+{
+    if (!ListViewShellConfig)
+    {
+        UEtytl::DebugLog(TEXT("无效 ListViewShellConfig!"), FColor::Red);
+        return;
+    }
+
+    MainTaskProgressBarShow(true);
+
+    int32 Index = 1;
+    for (auto TempItem : ListViewShellConfig->GetListItems())
+    {
+        if (UShellConfigItem* TempShellConfigItem = Cast<UShellConfigItem>(TempItem))
+        {
+            float SourceFileCountProgress;
+            float DestinationPathCountProgress;
+
+            // 处理源文件路径
+            TArray<FString> TempFilePathList = StringManage(TempShellConfigItem->SourceFile);
+            int32 SourceItemIndex = 1;
+            for (auto& TempFilePath : TempFilePathList)
+            {
+                if (!FilePathManage(TempFilePath, TempShellConfigItem))
+                {
+                    UEtytl::DebugLog(FString::Printf(TEXT("源文件路径 处理失败! 索引[%d][%d][%s]"), Index, SourceItemIndex, *TempFilePath), FColor::Red);
+                }
+                else {
+                    UEtytl::DebugLog(FString::Printf(TEXT("源文件路径 有效路径! 索引[%d][%d][%s]"), Index, SourceItemIndex, *TempFilePath));
+                    SourceFileCountProgress = static_cast<float>(SourceItemIndex) / ListViewShellConfig->GetNumItems() * 50.0f;
+
+                    // 更新进度（切换到 GameThread）
+                    MainTaskProgress = SourceFileCountProgress + DestinationPathCountProgress;
+                }
+                SourceItemIndex++;
+            }
+
+            // 处理目的地路径
+            TArray<FString> TempDesitiantionPath = StringManage(TempShellConfigItem->DestinationPath);
+            int32 DesitiantionPathIndex = 1;
+            for (auto& TempFilePath : TempDesitiantionPath)
+            {
+                if (!IsVaildFilePath(TempFilePath))
+                {
+                    UEtytl::DebugLog(FString::Printf(TEXT("目的地路径 非有效路径! 索引[%d][%d][%s]"), Index, DesitiantionPathIndex, *TempFilePath), FColor::Red);
+                }
+                else {
+                    UEtytl::DebugLog(FString::Printf(TEXT("目的地路径 有效路径! 索引[%d][%d][%s]"), Index, DesitiantionPathIndex, *TempFilePath));
+                    DestinationPathCountProgress = static_cast<float>(DesitiantionPathIndex) / ListViewShellConfig->GetNumItems() * 50.0f;
+
+                    // 更新进度（切换到 GameThread）
+                    MainTaskProgress = SourceFileCountProgress + DestinationPathCountProgress;
+                }
+                DesitiantionPathIndex++;
+            }
+        }
+        else
+        {
+            UEtytl::DebugLog(FString::Printf(TEXT("无效 tempShellConfigItem! 索引[%d]"), Index), FColor::Red);
+        }
+        Index++;
+    }
+
+    // 最终进度 100%
+    MainTaskProgress = 100.f;
+    MainTaskProgressBarShow(false);
+}
+
+bool USettingWidget::OperateCopyFile(std::filesystem::path _SourceItem, std::filesystem::path _DestinationPath)
+{
+    tytl::FileSystem FileSystem;
+    FileSystem.SetPath(_SourceItem);
+    return FileSystem.Copy(_DestinationPath, true);
+}
+
+void USettingWidget::StartBackup(UShellConfigItem* _ShellConfigItem)
+{
+    if (!_ShellConfigItem) {
+        UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::StartBackup: 无效 ShellConfigItem!")), FColor::Red);
+    }
+
+    int32 SourceItemIndex = 1;
+    int32 DesitiantionPathIndex = 1;
+    for (auto& tempSourceFileDirectoryList : _ShellConfigItem->SourceFileDirectoryList) {
+        for (auto& tempDestinationPath : *_ShellConfigItem->DestinationPathList) {
+            if (!OperateCopyFile(tempSourceFileDirectoryList.path(), tempDestinationPath)) {
+                UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::StartBackup: 复制失败! 源路径[%s]/目的地路径[%s]"), 
+                    tempSourceFileDirectoryList.path().wstring().c_str(), tempDestinationPath.wstring().c_str()), FColor::Red);
+            }
+            _ShellConfigItem->Progress = static_cast<float>(SourceItemIndex) / _ShellConfigItem->SourceFileDirectoryList.size() * 50.0f;
+        }
+    }
+    for (auto& tempSourceFilePathList : *_ShellConfigItem->SourceFilePathList) {
+        for (auto& tempDestinationPath : *_ShellConfigItem->DestinationPathList) {
+            if (!OperateCopyFile(tempSourceFilePathList, tempDestinationPath)) {
+                UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::StartBackup: 复制失败! 源路径[%s]/目的地路径[%s]"),
+                    tempSourceFilePathList.wstring().c_str(), tempDestinationPath.wstring().c_str()), FColor::Red);
+            }
+            _ShellConfigItem->Progress = static_cast<float>(DesitiantionPathIndex) / _ShellConfigItem->SourceFilePathList->size() * 50.0f;
+        }
+    }
+
+    _ShellConfigItem->Progress = 100.f;
 }

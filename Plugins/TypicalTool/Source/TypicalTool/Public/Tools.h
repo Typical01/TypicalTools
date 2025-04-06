@@ -319,18 +319,24 @@ namespace UETypicalTool {
 	// * Show: bool
 	// * Render: [0](暂停渲染)/[0<](恢复渲染)
 	template<class T = bool>
-	void WindowShowAndRender(bool _bShowWindow, int32 _RenderFrameRate)
+	void WindowShowAndRender(bool _bShowWindow, int32 _RenderFrameRate, bool bShowLog = false)
 	{
 		// 主窗口隐藏/显示
-		if (FSlateApplication::IsInitialized()) {
-			TSharedPtr<SWindow> MainWindow = FSlateApplication::Get().GetActiveTopLevelWindow();
+		if (GEngine && GEngine->GameViewport && GEngine->GameViewport->GetWindow().IsValid()) {
+			TSharedPtr<SWindow> MainWindow = GEngine->GameViewport->GetWindow();
+
 			if (MainWindow.IsValid()) {
 				if (_bShowWindow) {
-					MainWindow->SetTitle(FText::FromString(TEXT("设置")));
 					MainWindow->ShowWindow();
+					if (bShowLog) {
+						DebugLog(TEXT("UEtytl::WindowShowAndRender: 显示窗口!"));
+					}
 				}
 				else {
 					MainWindow->HideWindow();
+					if (bShowLog) {
+						DebugLog(TEXT("UEtytl::WindowShowAndRender: 隐藏窗口!"));
+					}
 				}
 			}
 		}
@@ -346,6 +352,16 @@ namespace UETypicalTool {
 		//{
 		//    GEngine->SetMaxFPS(60); // 将帧率限制为10 FPS
 		//}
+	}
+	
+	template<class T = bool>
+	TSharedPtr<SWindow> GetWindow()
+	{
+		if (GEngine && GEngine->GameViewport && GEngine->GameViewport->GetWindow().IsValid()) {
+			return GEngine->GameViewport->GetWindow();
+		}
+		
+		return MakeShareable<SWindow>(nullptr);
 	}
 
 	/* 设置窗口大小与模式(全屏/窗口/无边框)
@@ -392,6 +408,7 @@ namespace UETypicalTool {
 		UKismetSystemLibrary::QuitGame(World, PlayerController, EQuitPreference::Quit, false);
 	}
 
+#undef CreateDirectory
 	/*
 	* _CreateFolderName: 创建的文件夹名称
 	* _TargetFolderPath: 创建文件夹的路径(默认为内容文件夹)
@@ -422,6 +439,7 @@ namespace UETypicalTool {
 			return true;
 		}
 	}
+#define CreateDirectory
 }
 
 namespace UEtytl = UETypicalTool;

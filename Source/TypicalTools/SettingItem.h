@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
 
+#include <map>
 #include <vector>
 
 #include "SettingItem.generated.h"
@@ -12,14 +13,25 @@
 
 // 用于存储分辨率的结构体
 struct Resolution {
-	int width;
-	int height;
-	int refreshRate;
+	int32 Width;
+	int32 Height;
+	int32 DisplayID; //显示器ID
+	int32 RefreshRate; //刷新率
 
+	// 构造函数
+	Resolution() : Width(-1), Height(-1), DisplayID(-1), RefreshRate(-1) {}
+	Resolution(int32 Width, int32 Height) : Width(Width), Height(Height), DisplayID(0), RefreshRate(0) {}
+	Resolution(int32 Width, int32 Height, int32 DisplayID, int32 RefreshRate)
+		: Width(Width), Height(Height), DisplayID(DisplayID), RefreshRate(RefreshRate) {}
+
+	bool IsValid();
+
+	// 用于 set 去重和排序
 	bool operator<(const Resolution& other) const {
-		if (width != other.width) return width < other.width;
-		if (height != other.height) return height < other.height;
-		return refreshRate < other.refreshRate;
+		if (Width != other.Width) return Width < other.Width;
+		if (Height != other.Height) return Height < other.Height;
+		if (DisplayID != other.DisplayID) return DisplayID < other.DisplayID;
+		return RefreshRate < other.RefreshRate;
 	}
 };
 
@@ -32,20 +44,24 @@ class TYPICALTOOLS_API USettingItem : public UObject
 	GENERATED_BODY()
 
 public:
+	std::map<FString, std::vector<Resolution>> DispalyDevice;
 
-	std::vector<Resolution> ResolutionVec;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FString BeginResolutionWidth = { TEXT("1920") };
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	/*FString BeginResolutionWidth = { TEXT("1920") };
 	FString BeginResolutionHeight = { TEXT("1080") };
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FString TargetResolutionWidth = { TEXT("1280") };
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FString TargetResolutionHeight = { TEXT("960") };
+	FString TargetResolutionHeight = { TEXT("960") };*/
+
+public:
+	USettingItem(const FObjectInitializer& ObjectInitializer);
+
+public:
+
+	Resolution ConvertStringToResolution(FString& ResolutionGroup);
+	FString ConvertResolutionToString(const Resolution& Resolution);
+	Resolution GetResolution(FString& DisplayDeviceName, FString& ResolutionGroup);
+	std::map<FString, std::vector<Resolution>> GetAllSupportedResolutions();
 
 public:
 	void OutputLog();
 };
-
-std::vector<Resolution> GetAllSupportedResolutions();
