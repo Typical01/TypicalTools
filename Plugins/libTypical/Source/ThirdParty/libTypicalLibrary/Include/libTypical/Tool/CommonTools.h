@@ -284,7 +284,7 @@ namespace Typical_Tool {
 		* _IsRecursive: 是否递归
 		* DirectoryList: 默认为空(不获取文件列表的字符串) | 非空(清楚内容后, 写入文件列表的字符串)
 		*/
-		std::vector<std::filesystem::directory_entry> DirectoryIterator(bool _IsRecursive = false,
+		std::vector<std::filesystem::directory_entry> DirectoryIterator(bool _IsRecursive = false, 
 			std::shared_ptr<std::vector<std::filesystem::path>> DirectoryListStr = std::make_shared<std::vector<std::filesystem::path>>()
 		) {
 			std::vector<std::filesystem::directory_entry> List; //目录列表
@@ -339,11 +339,11 @@ namespace Typical_Tool {
 		}
 
 		//遍历目录: return 目录列表
-		/* 
+		/*
 		* _IsRecursive: 是否递归
 		* DirectoryList: 默认为空(不获取文件列表的字符串) | 非空(清楚内容后, 写入文件列表的字符串)
 		*/
-		std::vector<std::filesystem::directory_entry> DirectoryIterator(bool _IsRecursive,  __int64& _FilePathSizeSum,
+		std::vector<std::filesystem::directory_entry> DirectoryIterator(bool _IsRecursive, __int64& _FilePathSizeSum,
 			std::shared_ptr<std::vector<std::filesystem::path>> DirectoryListStr = std::make_shared<std::vector<std::filesystem::path>>()
 		) {
 			std::vector<std::filesystem::directory_entry> List; //目录列表

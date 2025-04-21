@@ -6,12 +6,18 @@
 #include "Blueprint/UserWidget.h"
 #include "Blueprint/IUserObjectListEntry.h"
 #include "Components/ProgressBar.h"
+#include "Components/HorizontalBox.h"
+#include "Components/Image.h"
+#include "Components/Button.h"
+#include "Components/MultiLineEditableText.h"
+#include "Components/EditableText.h"
+#include "Components/CheckBox.h"
 
 #include "Components/ListView.h"
 #include "SettingWidget.h"
 
-
 #include "EntryWidget.generated.h"
+
 
 /**
  * 
@@ -22,26 +28,49 @@ class TYPICALTOOLS_API UEntryWidget : public UUserWidget, public IUserObjectList
 	GENERATED_BODY()
 
 public:
-	~UEntryWidget();
 
 public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	USettingWidget* SettingWidget; //设置UMG
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	UShellConfigItem* ShellConfigItem; //ShellConfig项
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
-	UProgressBar* ProgressBarItem; //进度条
 
-	void OutputLog();
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	UProgressBar* ProgressBarItem;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	UHorizontalBox* HorizontalBoxProgressBar;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	UButton* ButtonBackup;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	UMultiLineEditableText* MultiLineEditableTextSourceItem;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	UMultiLineEditableText* MultiLineEditableTextDestinationPath;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	UEditableText* EditableTextOperationName;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	UCheckBox* CheckBoxStartBackup;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	UCheckBox* CheckBoxSetPermission;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	UImage* ImageSouceFile; //源文件 背景
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
+	UImage* ImageDestinationPath; //目的地路径 背景
 
 public:
-	UFUNCTION(BlueprintCallable, Category = "Shell")
-	void Init(UUserWidget* _SettingWidget);
+	virtual void NativeOnListItemObjectSet(UObject* ItemObject) override;
+
+public:
 
 	UFUNCTION(BlueprintCallable, Category = "Shell")
 	void OnBackupButton();
 
+	//不适合虚拟化的 UI复用
+	void OnBackupButtonIsEnabled(bool _bIsEnabled);
+
 
 	UFUNCTION(BlueprintCallable, Category = "Shell")
-	void MainTaskProgressBarShow(bool bShow);
+	void SetProgress(float Progress);
 };

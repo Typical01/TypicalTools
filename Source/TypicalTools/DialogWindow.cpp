@@ -19,7 +19,6 @@ DialogWindow::~DialogWindow()
 {
 }
 
-
 TSharedRef<SWindow> CreateToolDialog(UUserWidget* _MainMenuWidget, FString _DialogTitleName, int32 _WindowWidth, int32 _WindowHeight)
 {
     // 创建独立对话框窗口

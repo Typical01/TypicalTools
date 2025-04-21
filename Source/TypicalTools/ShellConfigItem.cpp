@@ -2,26 +2,23 @@
 
 
 #include "ShellConfigItem.h"
+#include "EntryWidget.h"
 
 UShellConfigItem::UShellConfigItem()
     : SourceFilePathList(std::make_shared<std::vector<std::filesystem::path>>()), DestinationPathList(std::make_shared<std::vector<std::filesystem::path>>())
 {
-    Defualut();
-}
-
-void UShellConfigItem::Defualut()
-{
     this->OperationName = TEXT("");
     this->SourceFile = TEXT("");
     this->DestinationPath = TEXT("");
-    this->Progress = -1.f;
-    this->StartBackup = false;
-    this->SetPermissions = false;
+    this->Progress = 0.f;
+    this->bEntryButtonIsEnabled = true;
+    this->bSetPermissions = false;
+    this->bStartBackup = false;
+    this->bCorrectSourceFile = true;
+    this->bCorrectDestinationPath = true;
     this->ShellConfigItemIndex = 0;
-
+    this->SourceFileSizeSum = 0;
     ItemID = FGuid::NewGuid(); //唯一ID
-
-    UEtytl::DebugLog(FString::Printf(TEXT("UShellConfigItem::Defualut: 初始化为: NULL!")), FColor::Yellow);
 }
 
 bool UShellConfigItem::Equals(const UShellConfigItem* Other) const
@@ -125,14 +122,17 @@ void UShellConfigItem::LoadConfigFile(const TSharedPtr<FJsonObject>& _SaveData)
 
 void UShellConfigItem::OutputLog()
 {
-    UEtytl::DebugLog(FString::Printf(TEXT("UShellConfigItem::OutputLog: [%s]"), *OperationName));
-    UEtytl::DebugLog(FString::Printf(TEXT("UShellConfigItem::OutputLog: [%s]"), *SourceFile));
-    UEtytl::DebugLog(FString::Printf(TEXT("UShellConfigItem::OutputLog: [%s]"), *DestinationPath));
-    UEtytl::DebugLog(FString::Printf(TEXT("UShellConfigItem::OutputLog: [%d]"), Progress));
-    UEtytl::DebugLog(FString::Printf(TEXT("UShellConfigItem::OutputLog: [%d]"), StartBackup));
-    UEtytl::DebugLog(FString::Printf(TEXT("UShellConfigItem::OutputLog: [%d]"), SetPermissions));
-    UEtytl::DebugLog(FString::Printf(TEXT("UShellConfigItem::OutputLog: [%d]"), SourceFileSizeSum));
-    UEtytl::DebugLog(FString::Printf(TEXT("UShellConfigItem::OutputLog: [%d]"), ShellConfigItemIndex));
+    UEtytl::DebugLog(FString::Printf(TEXT("UShellConfigItem::OutputLog: 操作名         [%s]"), *OperationName));
+    UEtytl::DebugLog(FString::Printf(TEXT("UShellConfigItem::OutputLog: 源文件         [%s]"), *SourceFile));
+    UEtytl::DebugLog(FString::Printf(TEXT("UShellConfigItem::OutputLog: 源文件有效性    [%s]"), *LexToString(bCorrectSourceFile)));
+    UEtytl::DebugLog(FString::Printf(TEXT("UShellConfigItem::OutputLog: 目的地路径      [%s]"), *DestinationPath));
+    UEtytl::DebugLog(FString::Printf(TEXT("UShellConfigItem::OutputLog: 目的地路径有效性[%s]"), *LexToString(bCorrectDestinationPath)));
+    UEtytl::DebugLog(FString::Printf(TEXT("UShellConfigItem::OutputLog: 进度           [%d]"), Progress));
+    UEtytl::DebugLog(FString::Printf(TEXT("UShellConfigItem::OutputLog: 按钮有效性      [%s]"), *LexToString(bEntryButtonIsEnabled)));
+    UEtytl::DebugLog(FString::Printf(TEXT("UShellConfigItem::OutputLog: 启动时备份      [%s]"), *LexToString(bStartBackup)));
+    UEtytl::DebugLog(FString::Printf(TEXT("UShellConfigItem::OutputLog: 修改文件权限    [%s]"), *LexToString(bSetPermissions)));
+    UEtytl::DebugLog(FString::Printf(TEXT("UShellConfigItem::OutputLog: 源文件总大小    [%d]"), SourceFileSizeSum));
+    UEtytl::DebugLog(FString::Printf(TEXT("UShellConfigItem::OutputLog: 当前项的索引    [%d]"), ShellConfigItemIndex));
 
     UEtytl::DebugLog(FString::Printf(TEXT("UShellConfigItem::OutputLog: SourceFileDirectoryList(源文件夹路径)")));
     for (auto& tempDirectoryEntry : SourceFileDirectoryList)
@@ -144,7 +144,6 @@ void UShellConfigItem::OutputLog()
     for (auto& tempDirectoryEntry : *SourceFilePathList)
     {
         UEtytl::DebugLog(FString::Printf(TEXT("UShellConfigItem::OutputLog: [%s]"), tempDirectoryEntry.wstring().c_str()));
-        
     }
 
     UEtytl::DebugLog(FString::Printf(TEXT("UShellConfigItem::OutputLog: DestinationPathList(目的地路径)")));

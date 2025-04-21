@@ -8,7 +8,7 @@
 #include "Blueprint/UserWidget.h"
 #include "Widgets/SWindow.h"
 
-#include "TypicalTool/Public/Tools.h"
+//#include "TypicalTool/Public/Tools.h"
 
 #include "Tools_GameInstance.generated.h"
 
@@ -43,18 +43,19 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
 	float MainWindowHideInterval = 0.1f; //主窗口的隐藏间隔
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
+	bool bShowMainWindow = true; //主窗口 隐藏/显示
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "UI")
 	TEnumAsByte<EWindowMode::Type> Fullscreen = EWindowMode::Windowed;
 
 	TSharedPtr<FJsonObject> ToolsConfig;
 
 public:
-	~UTools_GameInstance();
-	virtual void OnStart();
-	virtual void Shutdown();
+	virtual void OnStart() override;
+	virtual void Shutdown() override;
 
 public:
 	UFUNCTION(BlueprintCallable)
-	void ExitGame();
+	void QuitGame();
 	void OnTimer();
 
 	void CreateConfigFile();

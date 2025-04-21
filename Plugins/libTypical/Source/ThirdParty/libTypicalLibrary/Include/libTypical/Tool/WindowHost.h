@@ -536,17 +536,20 @@ namespace Typical_Tool {
 		//进程DPI_AWARENESS_CONTEXT_SYSTEM_AWARE
 		template<class T = bool>
 		void WindowDPI() {
-			//设置DPI感知级别(可选，仅Windows 10 1703及更高版本）
-
 			// 设置 DPI 感知
+			
+			//#include <Shcore.h>
+			//链接 Shcore.lib 库
+#ifdef WIN32APP
 			SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE);
-			//if (SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_SYSTEM_AWARE) == NULL) { //传入的值无效
-			//	lgc(TEXT("Windows DPI: 传入的值无效."));
-			//}
-			//else {
-			//	lgc(TEXT("Windows DPI: DPI感知(DPI_AWARENESS_CONTEXT_SYSTEM_AWARE) 设置成功!"));
+#else
+			if (SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_SYSTEM_AWARE) == NULL) { //传入的值无效
+				lgc(TEXT("Windows DPI: 传入的值无效."));
+				return;
+			}
 
-			//}
+			lgc(TEXT("Windows DPI: DPI感知(DPI_AWARENESS_CONTEXT_SYSTEM_AWARE) 设置成功!"));
+#endif
 		}
 
 		//单一实例窗口程序
@@ -624,7 +627,7 @@ namespace Typical_Tool {
 
 		// 添加注册表项以实现开机自启动
 		template<class T = bool>
-		bool SetSelfStarting(Tstr valueName, Tstr exePath, bool _bAutoStart) {
+		bool SetSelfStarting(Tstr valueName, Tstr exePath, Tstr CommandLineParam, bool _bAutoStart) {
 			LONG result;
 			HKEY hKey;
 
@@ -636,6 +639,15 @@ namespace Typical_Tool {
 			if (result != ERROR_SUCCESS) {
 				lgc(Err, Printf(TEXT("打开密钥[%s]失败!"), ToStr(result)));
 				return false;
+			}
+
+			// 路径自动添加双引号
+			if (exePath.front() != TEXT('\"') || exePath.back() != TEXT('\"')) {
+				exePath = Printf(TEXT("\"%s\""), exePath); // "%s"
+			}
+
+			if (!CommandLineParam.empty()) {
+				exePath = Printf(TEXT("%s %s"), exePath, CommandLineParam);
 			}
 
 			// 查询指定的注册表值

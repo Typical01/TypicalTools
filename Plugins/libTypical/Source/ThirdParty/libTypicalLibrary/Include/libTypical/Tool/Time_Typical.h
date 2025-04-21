@@ -124,25 +124,31 @@ namespace Typical_Tool {
 	}
 #define TimeToStr TimeMeasureToString
 
-	// TimePoint: 时间
-	// Target: 转换前的时间计量
-	// Result: 转换后的时间计量
-	// return 转换后的时间
+	/// <summary>
+	/// 时间转换
+	/// </summary>
+	/// <param name="Target">: 转换前的时间计量</param>
+	/// <param name="Result">: 转换后的时间计量</param>
+	/// <param name="TimePoint">: 时间</param>
+	/// <returns></returns>
 	template<class Target = time::sec, class Result = time::ms>
 	static long long TransformTimes(const long long& TimePoint)
 	{
 		return std::chrono::duration_cast<Result>(Target(TimePoint)).count();
 	}
 
-	/*
-	* Target: NULL
-	* _Tm: 当前时间的单位
-	* _Time: 当前时间
-	* _bShowMeasure: 字符串结果带单位
-	* _FormatPlaceholder: 格式占位符宽度, 进位不足时补 '0'
-	* _TimeIntervalStr: 每级单位时间的间隔符号
-	* _Number(Left/Right)IntervalStr: 突出当前时间的格式
-	*/
+	/// <summary>
+	/// 时间单位自动转换字符串
+	/// </summary>
+	/// <param name="Target">: NULL</param>
+	/// <param name="_Time">: 当前时间</param>
+	/// <param name="_Tm">: 当前时间的单位</param>
+	/// <param name="_bShowMeasure">: 字符串结果带单位</param>
+	/// <param name="_FormatPlaceholder">: 格式占位符宽度, 进位不足时补 '0'</param>
+	/// <param name="_TimeIntervalStr">: 每级单位时间的间隔符号</param>
+	/// <param name="_NumberLeftIntervalStr">: 突出当前时间的格式 Left</param>
+	/// <param name="_NumberRightIntervalStr">: 突出当前时间的格式 Right</param>
+	/// <returns></returns>
 	template <class Target = bool>
 	Tstr TimeAutoToStr(long long _Time, TimeMeasure _Tm, bool _bShowMeasure = true, int _FormatPlaceholder = 1, const Tstr& _TimeIntervalStr = TEXT(" "),
 		const Tstr& _NumberLeftIntervalStr = TEXT(""), const Tstr& _NumberRightIntervalStr = TEXT("")) {
@@ -220,11 +226,11 @@ namespace Typical_Tool {
 		bool IsSaveAllTimePoint;
 
 	public:
-		/*
-		* _IsSaveAllTimePoint: 是否保存所有的时间节点
-		*	保存: 大量数据时, 占用内存; 接口传入(int)
-		*	不保存: 只保存(第一次/前一次/后一次)的时间节点; 接口传入(TimePointLocation/tpl)
-		*/
+		/// <summary>
+		/// 保存: 大量数据时, 占用内存; 接口传入(int) |
+		/// 不保存: 只保存(第一次/前一次/后一次)的时间节点; 接口传入(TimePointLocation/tpl)
+		/// </summary>
+		/// <param name="_IsSaveAllTimePoint">: 是否保存所有的时间节点</param>
 		Timer(bool _IsSaveAllTimePoint = false)
 			: IsSaveAllTimePoint(_IsSaveAllTimePoint)
 		{
@@ -271,19 +277,19 @@ namespace Typical_Tool {
 		void SetTimer(const std::chrono::steady_clock::time_point& _TimePoint, int _Location) {
 			Time_IsValid_RunTime(_Location, TEXT("SetTimer()"));
 
-			std::lock_guard<mutex> tempMutex(this->mutex_Timer);
+			std::lock_guard<std::mutex> tempMutex(this->mutex_Timer);
 			this->TimerContainer[_Location] = _TimePoint;
 		}
 		void SetTimer(std::chrono::steady_clock::time_point&& _TimePoint, int _Location) {
 			Time_IsValid_RunTime(_Location, TEXT("SetTimer()"));
 
-			std::lock_guard<mutex> tempMutex(this->mutex_Timer);
+			std::lock_guard<std::mutex> tempMutex(this->mutex_Timer);
 			this->TimerContainer[_Location] = _TimePoint;
 		}
 		std::chrono::steady_clock::time_point GetTimer(int _Location) {
 			Time_IsValid_RunTime(_Location, TEXT("GetTimer()"));
 
-			std::lock_guard<mutex> tempMutex(this->mutex_Timer);
+			std::lock_guard<std::mutex> tempMutex(this->mutex_Timer);
 			return this->TimerContainer[_Location];
 		}
 
@@ -324,17 +330,15 @@ namespace Typical_Tool {
 	class Time {
 	public:
 		static bool IsShowLog;
-		inline static Log& log = lgc;
 
 	public:
 		static void SetShowLog(bool _IsShowLog);
-		static void SetLog(tytool::Log& _Log);
 
 		template<class Target = time::sec>
 		static void sleep(long long _Number)
 		{
 			if (IsShowLog) {
-				log(War, Printf(TEXT("休眠: [%s]%s"), _Number, TimeMeasureToString<Target>()));
+				LogDebug(War, Printf(TEXT("休眠: [%s]%s"), _Number, TimeMeasureToString<Target>()));
 			}
 			std::this_thread::sleep_for(Target(_Number));
 		}
@@ -342,7 +346,7 @@ namespace Typical_Tool {
 		static void wait(long long _Number)
 		{
 			if (IsShowLog) {
-				log(War, Printf(TEXT("等待: [%s]%s"), _Number, TimeMeasureToString<Target>()));
+				LogDebug(War, Printf(TEXT("等待: [%s]%s"), _Number, TimeMeasureToString<Target>()));
 			}
 			Target timeTarget = std::chrono::duration_cast<Target>(std::chrono::steady_clock::now().time_since_epoch()) + Target(_Number);
 			while (timeTarget > std::chrono::duration_cast<Target>(std::chrono::steady_clock::now().time_since_epoch())) {}
