@@ -19,8 +19,6 @@ void UEntryWidget::NativeOnListItemObjectSet(UObject* ItemObject)
         return;
     }
 
-    ShellConfigItem->EntryWidget = this;
-
     if (!IsValid(EditableTextOperationName)) {
         UEtytl::DebugLog(FString::Printf(TEXT("UEntryWidget::Init: EditableTextOperationName 无效!")), FColor::Red);
         return;
@@ -54,6 +52,8 @@ void UEntryWidget::NativeOnListItemObjectSet(UObject* ItemObject)
 
 void UEntryWidget::OnBackupButton()
 {
+    UEtytl::DebugLog(FString::Printf(TEXT("UEntryWidget::OnBackupButton: 备份按钮!")));
+
     if (!IsValid(SettingWidget)) {
         UEtytl::DebugLog(FString::Printf(TEXT("UEntryWidget::OnBackupButton: SettingWidget 无效!")), FColor::Red);
         return;
@@ -74,17 +74,15 @@ void UEntryWidget::OnBackupButton()
         ErrorPathTips->Text = FString::Printf(TEXT("上一次备份未完成[%s]"), *ShellConfigItem->OperationName);
         SettingWidget->ListViewErrorPathTipsArray.Add(ErrorPathTips);
         SettingWidget->OnErrorMessageTips();
+    }
+    else {
+        //OnBackupButtonIsEnabled(false); //等待备份完成
 
-        return;
-    } 
-    ShellConfigItem->bEntryButtonIsEnabled = false;
+        //SetProgress(.3f);
+        SettingWidget->StartBackup(ShellConfigItem);
 
-    OnBackupButtonIsEnabled(false); //等待备份完成
-
-    SetProgress(.3f);
-    SettingWidget->StartBackup(ShellConfigItem);
-
-    SetProgress(1.f);
+        //SetProgress(1.f);
+    }
 }
 
 void UEntryWidget::OnBackupButtonIsEnabled(bool _bIsEnabled)

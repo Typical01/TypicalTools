@@ -29,8 +29,6 @@ public:
     void OutputLog();
 
 public:
-    class UEntryWidget* EntryWidget;
-
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ListItem")
     FString OperationName; //操作名
 

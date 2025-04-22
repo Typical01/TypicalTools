@@ -102,6 +102,12 @@ void UTools_GameInstance::OnStart()
 
     //创建对话框: 文件备份
     DialogMainWindow = CreateToolDialog(MainMenuWidget, TEXT("文件备份"), DialogWindowWidth, DialogWindowHeight);
+    USettingWidget* temp = Cast<USettingWidget>(MainMenuWidget);
+    if (!IsValid(temp)) {
+        UEtytl::DebugLog(FString::Printf(TEXT("UTools_GameInstance::OnStart: MainMenuWidget 转换 USettingWidget后 无效!")));
+        return;
+    }
+    temp->InitializeListView();
 }
 
 void UTools_GameInstance::QuitGame()

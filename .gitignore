@@ -5,6 +5,7 @@ DerivedDataCache/
 Intermediate/
 Saved/
 Build/
+Test/
 
 build/
 build_Unix/

@@ -37,6 +37,8 @@ public:
 	UListView* ListViewShellConfig; //列表视图: 备份项
 
 	TArray<UShellConfigItem*> ListViewShellConfigArray;
+	TArray<bool> ListViewShellConfigCompleteArray; //队列: 进度
+	int32 AutoBackupNum = 0;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 	UProgressBar* ProgressBarMainTask; //进度条: 主任务
@@ -59,6 +61,7 @@ public:
 
 	FTimerHandle AutoPathManageTimerHandle;
 	std::atomic<bool> bTaskComplete = true; //任务完成
+	std::atomic<bool> bTaskCompleteQueue = true; //任务完成 队列
 	std::atomic<bool> bQuitGame = false; //退出
 
 public:

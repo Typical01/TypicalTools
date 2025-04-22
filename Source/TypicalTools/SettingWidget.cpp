@@ -25,8 +25,9 @@ void USettingWidget::Destruct()
     if (!IsValid(Tools_GameInstance)) {
         UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::Destruct: Tools_GameInstance 无效!")), FColor::Red);
     }
-
-    Tools_GameInstance->GetTimerManager().ClearTimer(AutoPathManageTimerHandle);
+    else {
+        Tools_GameInstance->GetTimerManager().ClearTimer(AutoPathManageTimerHandle);
+    }
 
     Super::Destruct();
 }
@@ -55,16 +56,20 @@ void USettingWidget::InitializeListView()
     if (!IsValid(Tools_GameInstance)) {
         UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::InitializeListView: Tools_GameInstance 无效!")), FColor::Red);
     }
-    Tools_GameInstance->GetTimerManager().SetTimer(
-        AutoPathManageTimerHandle,                // 定时器句柄
-        this,                         // 调用函数的对象
-        &USettingWidget::OnPathManage,        // 定时触发的函数
-        600.0f,                         // 初始延迟时间（秒）
-        true,                        // 是否循环调用
-        -1.0f                         // 循环调用的间隔时间（秒），-1.0f 表示使用初始延迟时间
-    );
+    else {
+        Tools_GameInstance->GetTimerManager().SetTimer(
+            AutoPathManageTimerHandle,                // 定时器句柄
+            this,                         // 调用函数的对象
+            &USettingWidget::OnPathManage,        // 定时触发的函数
+            600.0f,                         // 初始延迟时间（秒）
+            true,                        // 是否循环调用
+            -1.0f                         // 循环调用的间隔时间（秒），-1.0f 表示使用初始延迟时间
+        );
+    }
+
     SetProgress(.6f);
 
+    bTaskCompleteQueue.store(false);
     int32 Index = 1;
     for (auto tempShellConfigItem : ListViewShellConfigArray) {
         if (!IsValid(tempShellConfigItem)) {
@@ -75,20 +80,18 @@ void USettingWidget::InitializeListView()
         if (tempShellConfigItem->bStartBackup) {
             SetProgress(static_cast<float>(Index) / ListViewShellConfigArray.Num() * .5f);
 
-            if (!IsValid(tempShellConfigItem->EntryWidget)) {
-                UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::InitializeListView: tempShellConfigItem->EntryWidget 无效! 索引[%d]"), Index), FColor::Red);
-            }
-            else {
-                tempShellConfigItem->EntryWidget->OnBackupButton(); //按下按钮
-            }
-            //StartBackup(tempShellConfigItem);
+            //if (!IsValid(tempShellConfigItem->EntryWidget)) {
+            //    UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::InitializeListView: tempShellConfigItem->EntryWidget 无效! 索引[%d]"), Index), FColor::Red);
+            //}
+            //else {
+            //    tempShellConfigItem->EntryWidget->OnBackupButton(); //按下按钮
+            //}
+            StartBackup(tempShellConfigItem);
         }
         Index++;
     }
 
     SetProgress(1.f);
-
-    OnAutoQuit();
 }
 
 void USettingWidget::OnApplyButton()
@@ -123,11 +126,16 @@ void USettingWidget::OnQuitButton()
     // 强制退出
     bQuitGame.store(true);
 
-    if (!bTaskComplete.load()) {
-        UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::OnQuitButton: bQuitGame [%s]!"), *LexToString(bQuitGame)), FColor::Red);
+    UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::OnQuitButton: bQuitGame [%s]!"), *LexToString(bQuitGame)), FColor::Red);
+    UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::OnQuitButton: bTaskCompleteQueue [%s]!"), *LexToString(bTaskCompleteQueue)), FColor::Red);
+    if (!bTaskComplete.load() || !bTaskCompleteQueue.load()) {
 
         if (!IsValid(Tools_GameInstance)) {
-            UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::OnApplyButton: Tools_GameInstance 无效!")), FColor::Red);
+            UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::OnQuitButton: Tools_GameInstance 无效!")), FColor::Red);
+            return;
+        }
+        if (!Tools_GameInstance->DialogMainWindow.IsValid()) {
+            UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::OnQuitButton: Tools_GameInstance->DialogMainWindow 无效!")), FColor::Red);
             return;
         }
 
@@ -188,13 +196,9 @@ void USettingWidget::OnApplyButtonIsEnabled(bool _bIsEnabled)
 
 void USettingWidget::OnAutoQuit()
 {
-    if (!IsValid(Tools_GameInstance)) {
-        UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::OnAutoQuit: Tools_GameInstance 无效!")), FColor::Red);
-        return;
-    }
-
+    UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::OnAutoQuit: bAutoStartingToQuitGame [%s]!"), *LexToString(bAutoStartingToQuitGame)), FColor::Red);
     if (bAutoStartingToQuitGame) {
-        Tools_GameInstance->QuitGame();
+        OnQuitButton();
     }
 }
 
@@ -214,11 +218,17 @@ void USettingWidget::OnErrorMessageTips()
     }
     else {
         if (ListViewErrorPathTipsArray.Num() != 0) {
-            VerticalBoxErrorPath->SetVisibility(ESlateVisibility::Visible);
+            AsyncTask(ENamedThreads::GameThread, [this]()
+                {
+                    VerticalBoxErrorPath->SetVisibility(ESlateVisibility::Visible);
+                });
             UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::OnErrorMessageTips: 显示 错误路径控件!")));
         }
         else {
-            VerticalBoxErrorPath->SetVisibility(ESlateVisibility::Collapsed);
+            AsyncTask(ENamedThreads::GameThread, [this]()
+                {
+                    VerticalBoxErrorPath->SetVisibility(ESlateVisibility::Collapsed);
+                });
             UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::OnErrorMessageTips: 隐藏 错误路径控件!")));
         }
 
@@ -226,9 +236,10 @@ void USettingWidget::OnErrorMessageTips()
             UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::OnErrorMessageTips: ListViewErrorPathTips 无效!")), FColor::Red);
         }
         else {
+            ListViewErrorPathTips->SetListItems(ListViewErrorPathTipsArray); //刷新
+            
             AsyncTask(ENamedThreads::GameThread, [this]()
                 {
-                    ListViewErrorPathTips->SetListItems(ListViewErrorPathTipsArray); //刷新
                     ListViewErrorPathTips->RegenerateAllEntries();
                 });
         }
@@ -325,7 +336,11 @@ UShellConfigItem* USettingWidget::AddListViewConfigItem()
     ListViewShellConfigArray.Add(ConfigItem);
 
     ListViewShellConfig->SetListItems(ListViewShellConfigArray); // 重新设置整个列表
-    ListViewShellConfig->RegenerateAllEntries();
+
+    AsyncTask(ENamedThreads::GameThread, [this]()
+        {
+            ListViewShellConfig->RegenerateAllEntries();
+        });
 
     return ConfigItem;
 }
@@ -349,7 +364,11 @@ void USettingWidget::DeleteListViewItem(UShellConfigItem* _Item)
 
     _Item = nullptr;
     ListViewShellConfig->SetListItems(ListViewShellConfigArray); // 重新设置整个列表
-    //ListViewShellConfig->RegenerateAllEntries();
+
+    AsyncTask(ENamedThreads::GameThread, [this]()
+        {
+            ListViewShellConfig->RegenerateAllEntries();
+        });
 }
 
 int32 USettingWidget::GetListViewConfigItemIndex(UShellConfigItem* _Item)
@@ -474,7 +493,11 @@ void USettingWidget::LoadSettingConfigFile()
         //从配置文件加载 ShellConfigItem
         ListViewShellConfigArray.Add(ConfigItem);
         ListViewShellConfig->SetListItems(ListViewShellConfigArray); // 重新设置整个列表
-        ListViewShellConfig->RegenerateAllEntries();
+
+        AsyncTask(ENamedThreads::GameThread, [this]()
+            {
+                ListViewShellConfig->RegenerateAllEntries();
+            });
 
         //ConfigItem = nullptr;
         UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::LoadSettingConfigFile: UShellConfigItem[%s] 添加成功!"), *Key));
@@ -554,7 +577,7 @@ bool USettingWidget::FilePathManage(FString& _FilePath, UShellConfigItem* _ListV
     //}
 
     _ListViewItem->SourceFilePathList->push_back(FileBackup.GetPath());
-    _ListViewItem->SourceFileSizeSum += std::filesystem::file_size(FileBackup.GetPath());
+    //_ListViewItem->SourceFileSizeSum += std::filesystem::file_size(FileBackup.GetPath());
     return true;
 }
 
@@ -583,6 +606,8 @@ void USettingWidget::OnPathManage()
 
         float SourceFileCountProgress = 0.f;
         float DestinationPathCountProgress = 0.f;
+        
+        AutoBackupNum += TempShellConfigItem->bStartBackup ? 1 : 0; //统计 启动时备份的数量
 
         // 处理源文件路径
         TArray<FString> TempFilePathList = StringManage(TempShellConfigItem->SourceFile);
@@ -608,7 +633,11 @@ void USettingWidget::OnPathManage()
                 }
                 else {
                     ListViewErrorPathTips->SetListItems(ListViewErrorPathTipsArray); //刷新
-                    ListViewErrorPathTips->RegenerateAllEntries();
+
+                    AsyncTask(ENamedThreads::GameThread, [this]()
+                        {
+                            ListViewErrorPathTips->RegenerateAllEntries();
+                        });
                 }
 
                 ErrorPathTips = nullptr;
@@ -678,11 +707,13 @@ bool USettingWidget::OperateCopyFile(std::filesystem::path _SourceItem, std::fil
             std::filesystem::perms::group_read | std::filesystem::perms::group_write |
             std::filesystem::perms::others_read | std::filesystem::perms::others_write);
     }
-    
+
     if (!FileSystem.Copy(_DestinationPath, false)) {
         const FString& tempError = FileSystem.GetErrorMessage().c_str();
         UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::OperateCopyFile: 错误信息[%s]!"), *tempError));
-        
+        UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::OperateCopyFile: 复制失败: [%s] ->\n [%s]"),
+            _SourceItem.c_str(), _DestinationPath.c_str()), FColor::Red);
+
         UTextTips* ErrorPathTips = NewObject<UTextTips>();
         ErrorPathTips->Text = tempError;
         ListViewErrorPathTipsArray.Add(ErrorPathTips); //添加错误信息
@@ -691,6 +722,9 @@ bool USettingWidget::OperateCopyFile(std::filesystem::path _SourceItem, std::fil
 
         return false;
     }
+
+    UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::OperateCopyFile: 复制成功: [%s] ->\n [%s]"),
+        _SourceItem.c_str(), _DestinationPath.c_str()), FColor::Green);
     return true;
 }
 
@@ -712,6 +746,8 @@ void USettingWidget::RunBackupTask(UShellConfigItem* _ShellConfigItem)
 
     Async(EAsyncExecution::Thread, [this, _ShellConfigItem]()
         {
+            _ShellConfigItem->bEntryButtonIsEnabled = false;
+
             // 预先计算操作总数
             const int32 TotalFolderOps = _ShellConfigItem->SourceFileDirectoryList.size() * _ShellConfigItem->DestinationPathList->size();
             const int32 TotalFileOps = _ShellConfigItem->SourceFilePathList->size() * _ShellConfigItem->DestinationPathList->size();
@@ -719,15 +755,13 @@ void USettingWidget::RunBackupTask(UShellConfigItem* _ShellConfigItem)
             int32 CompletedOps = 0;
 
             // 第一阶段：复制文件夹
-            for (const auto& SourceDir : _ShellConfigItem->SourceFileDirectoryList)
-            {
+            for (const auto& SourceDir : _ShellConfigItem->SourceFileDirectoryList) {
                 if (bQuitGame.load()) {
                     OnQuitGame();
                     break;
                 }
 
-                for (const auto& DestPath : *_ShellConfigItem->DestinationPathList)
-                {
+                for (const auto& DestPath : *_ShellConfigItem->DestinationPathList) {
                     if (bQuitGame.load()) {
                         OnQuitGame();
                         break;
@@ -736,32 +770,26 @@ void USettingWidget::RunBackupTask(UShellConfigItem* _ShellConfigItem)
                     FString SourceStr(SourceDir.path().c_str());
                     FString DestStr(DestPath.c_str());
 
-                    if (!OperateCopyFile(SourceDir.path(), DestPath, _ShellConfigItem->bSetPermissions))
-                    {
-                        UEtytl::DebugLog(FString::Printf(TEXT("复制失败: [%s] ->\n [%s]"),
-                            *SourceStr, *DestStr), FColor::Red);
+                    if (!OperateCopyFile(SourceDir.path(), DestPath, _ShellConfigItem->bSetPermissions)) {
+                    }
+                    else {
                     }
 
                     // 更新进度
                     float Progress = static_cast<float>(++CompletedOps) / TotalOps;
 
-                    AsyncTask(ENamedThreads::GameThread, [this, Progress]()
-                        {
-                            SetProgress(Progress);
-                        });
+                    SetProgress(Progress);
                 }
             }
 
             // 第二阶段：复制文件
-            for (const auto& SourceFile : *_ShellConfigItem->SourceFilePathList)
-            {
+            for (const auto& SourceFile : *_ShellConfigItem->SourceFilePathList) {
                 if (bQuitGame.load()) {
                     OnQuitGame();
                     break;
                 }
 
-                for (const auto& DestPath : *_ShellConfigItem->DestinationPathList)
-                {
+                for (const auto& DestPath : *_ShellConfigItem->DestinationPathList) {
                     if (bQuitGame.load()) {
                         OnQuitGame();
                         break;
@@ -770,33 +798,38 @@ void USettingWidget::RunBackupTask(UShellConfigItem* _ShellConfigItem)
                     FString SourceStr(SourceFile.c_str());
                     FString DestStr(DestPath.c_str());
 
-                    if (!OperateCopyFile(SourceFile, DestPath, _ShellConfigItem->bSetPermissions))
-                    {
-                        UEtytl::DebugLog(FString::Printf(TEXT("复制失败: [%s] ->\n [%s]"),
-                            *SourceStr, *DestStr), FColor::Red);
+                    if (!OperateCopyFile(SourceFile, DestPath, _ShellConfigItem->bSetPermissions)) {
+                    }
+                    else {
                     }
 
                     // 更新进度
                     float Progress = static_cast<float>(++CompletedOps) / TotalOps;
 
-                    AsyncTask(ENamedThreads::GameThread, [this, Progress]()
-                        {
-                            SetProgress(Progress);
-                        });
+                    SetProgress(Progress);
                 }
             }
 
             // 任务完成通知
             AsyncTask(ENamedThreads::GameThread, [this, _ShellConfigItem]()
                 {
-                    bTaskComplete.store(true);
+                    UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::RunBackupTask: [%s]备份完成!"), *_ShellConfigItem->OperationName));
 
                     _ShellConfigItem->bEntryButtonIsEnabled = true;
-                    if (!IsValid(_ShellConfigItem->EntryWidget)) {
+                    bTaskComplete.store(true);
+
+                    ListViewShellConfigCompleteArray.Add(true);
+                    if (ListViewShellConfigCompleteArray.Num() == AutoBackupNum) {
+                        UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::RunBackupTask: [%d]已完成的启动时备份项!"), ListViewShellConfigCompleteArray.Num()));
+                        UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::RunBackupTask: [%d]总启动时备份项!"), AutoBackupNum));
+                        bTaskCompleteQueue.store(true);
+                        OnAutoQuit();
+                    }
+                    /*if (!IsValid(_ShellConfigItem->EntryWidget)) {
                         UEtytl::DebugLog(FString::Printf(TEXT("USettingWidget::RunBackupTask: _ShellConfigItem->EntryWidget 无效! 无法通知: 备份完成!")));
                         return;
                     }
-                    _ShellConfigItem->EntryWidget->OnBackupButtonIsEnabled(true);
+                    _ShellConfigItem->EntryWidget->OnBackupButtonIsEnabled(true);*/
 
                     OnApplyButtonIsEnabled(true);
                     OnErrorMessageTips();
