@@ -9,17 +9,36 @@
 
 void UTextTipsEntryWidget::NativeOnListItemObjectSet(UObject* ListItemObject)
 {
-    UTextTips* DataObject = Cast<UTextTips>(ListItemObject);
-    if (!IsValid(DataObject)) {
-        UEtytl::DebugLog(FString::Printf(TEXT("UTextTipsEntryWidget::NativeOnListItemObjectSet: DataObject 无效!")), FColor::Red);
+    if (!IsValid(ListItemObject)) {
+        UEtytl::DebugLog(FString::Printf(TEXT("UTextTipsEntryWidget::NativeOnListItemObjectSet: ListItemObject 无效!")), FColor::Red);
         return;
     }
-    TextTips = DataObject;
-    UEtytl::DebugLog(FString::Printf(TEXT("UTextTipsEntryWidget::NativeOnListItemObjectSet: TextTips[%s]!"), *TextTips->Text));
+}
 
-    if (!IsValid(TextBlockTips)) {
-        UEtytl::DebugLog(FString::Printf(TEXT("UTextTipsEntryWidget::NativeOnListItemObjectSet: TextBlockTips 无效!")), FColor::Red);
+void UTextTipsEntryWidget::SetProgress(float Progress)
+{
+    if (!IsValid(ProgressBarTask)) {
+        UEtytl::DebugLog(FString::Printf(TEXT("UTextTipsEntryWidget::SetProgress: ProgressBarTask 无效!")), FColor::Red);
         return;
     }
-    TextBlockTips->SetText(FText::FromString(TextTips->Text));
+    Progress = FMath::Clamp(Progress, 0.f, 1.f);
+
+    AsyncTask(ENamedThreads::GameThread, [this, Progress]()
+        {
+            UEtytl::DebugLog(FString::Printf(TEXT("UTextTipsEntryWidget::SetProgress: Progress[%f]"), Progress));
+            ProgressBarTask->SetPercent(Progress);
+        });
+}
+
+void UTextTipsEntryWidget::SetText(FText Text)
+{
+    if (!IsValid(TextBlockTips)) {
+        UEtytl::DebugLog(FString::Printf(TEXT("UTextTipsEntryWidget::SetText: TextBlockTips 无效!")), FColor::Red);
+        return;
+    }
+    AsyncTask(ENamedThreads::GameThread, [this, Text]()
+        {
+            UEtytl::DebugLog(FString::Printf(TEXT("UTextTipsEntryWidget::SetText: Text[%s]"), *Text.ToString()));
+            TextBlockTips->SetText(Text);
+        });
 }

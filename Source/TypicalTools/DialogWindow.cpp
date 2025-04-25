@@ -21,14 +21,26 @@ DialogWindow::~DialogWindow()
 
 TSharedRef<SWindow> CreateToolDialog(UUserWidget* _MainMenuWidget, FString _DialogTitleName, int32 _WindowWidth, int32 _WindowHeight)
 {
+    //// 创建自定义的窗口样式
+    //FWindowStyle CustomWindowStyle = FCoreStyle::Get().GetWidgetStyle<FWindowStyle>("Window");
+    //// 创建自定义的字体信息
+    //FSlateFontInfo CustomFontInfo = FCoreStyle::Get().GetFontStyle("NormalFont");
+    //CustomFontInfo.Size = 16; // 设置所需的字体大小
+
+    //// 应用自定义的字体信息到标题文本样式
+    //FTextBlockStyle CustomTitleTextStyle = CustomWindowStyle.TitleTextStyle;
+    //CustomTitleTextStyle.SetFont(CustomFontInfo);
+    //CustomWindowStyle.SetTitleTextStyle(CustomTitleTextStyle); 
+
     // 创建独立对话框窗口
     TSharedRef<SWindow> DialogWindow = SNew(SWindow)
         .Title(FText::FromString(_DialogTitleName))
-        .ClientSize(FVector2D(_WindowWidth + 2, _WindowHeight + 40))
+        .ClientSize(FVector2D(_WindowWidth + 2, _WindowHeight + 2))
         .SupportsMaximize(false)
         .SupportsMinimize(false)
         .SizingRule(ESizingRule::FixedSize) // 固定窗口大小
-        .HasCloseButton(false); // 禁用关闭按钮
+        .HasCloseButton(false);              // 禁用关闭按钮
+        //.Style(&CustomWindowStyle);         // 应用自定义样式
         
     TSharedPtr<SWidget> SlateWidget = _MainMenuWidget->TakeWidget();
     // 将UserWidget添加到Slate布局中
@@ -48,6 +60,10 @@ TSharedRef<SWindow> CreateToolDialog(UUserWidget* _MainMenuWidget, FString _Dial
     DialogWindow->SetContent(DialogContent);
     // 添加对话框窗口到 Slate 应用程序
     FSlateApplication::Get().AddWindow(DialogWindow);
+
+    //聚焦
+    FSlateApplication::Get().SetKeyboardFocus(DialogWindow, EFocusCause::SetDirectly);
+    FSlateApplication::Get().SetUserFocus(0, DialogWindow, EFocusCause::SetDirectly);
 
     return DialogWindow;
 }

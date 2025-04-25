@@ -43,9 +43,6 @@ public:
     bool bCorrectDestinationPath; //目的地路径有效
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ListItem")
-    float Progress; //进度
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ListItem")
     bool bEntryButtonIsEnabled; //按键是否有效
 
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "ListItem")
@@ -54,9 +51,6 @@ public:
     bool bSetPermissions; //设置文件/夹权限
     UPROPERTY(EditAnywhere, BlueprintReadWrite)
     int64 SourceFileSizeSum; //源文件的总大小
-
-    UPROPERTY(EditAnywhere, BlueprintReadWrite)
-    int32 ShellConfigItemIndex; //当前项的索引
 
     std::vector<std::filesystem::directory_entry> SourceFileDirectoryList; //源文件夹列表
     std::shared_ptr<std::vector<std::filesystem::path>> SourceFilePathList; //源文件路径列表

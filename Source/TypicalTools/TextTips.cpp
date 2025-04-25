@@ -8,4 +8,11 @@
 UTextTips::UTextTips()
 {
 	Text = TEXT("");
+	Range = 0.f;
+}
+
+void UTextTips::SetRange(float NewRange)
+{
+	Range = NewRange;
+	OnProgressChanged.Broadcast(Range);
 }

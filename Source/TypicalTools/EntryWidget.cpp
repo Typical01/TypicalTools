@@ -72,57 +72,10 @@ void UEntryWidget::OnBackupButton()
 
         UTextTips* ErrorPathTips = NewObject<UTextTips>();
         ErrorPathTips->Text = FString::Printf(TEXT("上一次备份未完成[%s]"), *ShellConfigItem->OperationName);
-        SettingWidget->ListViewErrorPathTipsArray.Add(ErrorPathTips);
+        SettingWidget->ListViewTipsMessageArray->Add(ErrorPathTips);
         SettingWidget->OnErrorMessageTips();
     }
     else {
-        //OnBackupButtonIsEnabled(false); //等待备份完成
-
-        //SetProgress(.3f);
         SettingWidget->StartBackup(ShellConfigItem);
-
-        //SetProgress(1.f);
     }
-}
-
-void UEntryWidget::OnBackupButtonIsEnabled(bool _bIsEnabled)
-{
-    //if (!IsValid(ButtonBackup)) {
-    //    UEtytl::DebugLog(FString::Printf(TEXT("UEntryWidget::OnBackupButton: ButtonBackup 无效!")), FColor::Red);
-    //    return;
-    //}
-
-    //AsyncTask(ENamedThreads::GameThread, [this, _bIsEnabled]()
-    //    {
-    //        ButtonBackup->SetIsEnabled(_bIsEnabled); //备份完成
-    //    });
-}
-
-void UEntryWidget::SetProgress(float Progress)
-{
-    //if (!IsValid(ProgressBarItem)) {
-    //    UEtytl::DebugLog(FString::Printf(TEXT("UEntryWidget::SetProgress: ProgressBarItem 无效!")), FColor::Red);
-    //    return;
-    //}
-    //if (!IsValid(HorizontalBoxProgressBar)) {
-    //    UEtytl::DebugLog(FString::Printf(TEXT("UEntryWidget::SetProgress: HorizontalBoxProgressBar 无效!")), FColor::Red);
-    //    return;
-    //}
-
-    //AsyncTask(ENamedThreads::GameThread, [this, Progress]()
-    //    {
-    //        HorizontalBoxProgressBar->SetVisibility(ESlateVisibility::Visible); //显示
-    //        float tempProgress = FMath::Clamp(Progress, 0.0f, 1.0f); //确保范围: 0-1 float
-    //        ProgressBarItem->SetPercent(tempProgress);
-    //        UEtytl::DebugLog(FString::Printf(TEXT("UEntryWidget::SetProgress: Progress[%f]"), tempProgress), FColor::Green);
-
-    //        //满进度
-    //        if (tempProgress >= 1.f) { //进度条清空
-    //            ProgressBarItem->SetPercent(0.f);
-    //            HorizontalBoxProgressBar->SetVisibility(ESlateVisibility::Collapsed); //隐藏
-    //        }
-    //        else {
-    //            HorizontalBoxProgressBar->SetVisibility(ESlateVisibility::Visible); //显示
-    //        }
-    //    });
 }

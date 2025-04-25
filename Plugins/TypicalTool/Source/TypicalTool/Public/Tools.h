@@ -64,6 +64,7 @@ namespace UETypicalTool {
 	/// <param name="Text:	文本"></param>
 	/// <param name="bNewOnTop:	文本位置 屏幕底(false)/顶(true)"></param>
 	/// <param name="TextScale:	文本缩放"></param>
+	UFUNCTION(BlueprintCallable, Category = "UEtytl")
 	TYPICALTOOL_API void DebugLog(int32 Key, float LogShowTime, FColor TextColor, const FString& Text, bool bNewOnTop = true, FVector2D TextScale = UE::Math::TVector2<double>::UnitVector);
 	/// <summary>
 	/// 
@@ -74,6 +75,7 @@ namespace UETypicalTool {
 	/// <param name="Text:	文本"></param>
 	/// <param name="bNewOnTop:	文本位置 屏幕底(false)/顶(true)"></param>
 	/// <param name="TextScale:	文本缩放"></param>
+	UFUNCTION(BlueprintCallable, Category = "UEtytl")
 	TYPICALTOOL_API void DebugLog(const FString& Text, FColor TextColor = FColor::Yellow, int32 Key = -1.f, float LogShowTime = -1.f,
 		bool bNewOnTop = true, FVector2D TextScale = UE::Math::TVector2<double>::UnitVector);
 

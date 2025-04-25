@@ -10,14 +10,12 @@ UShellConfigItem::UShellConfigItem()
     this->OperationName = TEXT("");
     this->SourceFile = TEXT("");
     this->DestinationPath = TEXT("");
-    this->Progress = 0.f;
     this->bEntryButtonIsEnabled = true;
     this->bSetPermissions = false;
     this->bStartBackup = false;
     this->bCorrectSourceFile = true;
     this->bCorrectDestinationPath = true;
-    this->ShellConfigItemIndex = 0;
-    this->SourceFileSizeSum = 0;
+    this->SourceFileSizeSum = 0LL;
     ItemID = FGuid::NewGuid(); //唯一ID
 }
 
@@ -127,12 +125,10 @@ void UShellConfigItem::OutputLog()
     UEtytl::DebugLog(FString::Printf(TEXT("UShellConfigItem::OutputLog: 源文件有效性    [%s]"), *LexToString(bCorrectSourceFile)));
     UEtytl::DebugLog(FString::Printf(TEXT("UShellConfigItem::OutputLog: 目的地路径      [%s]"), *DestinationPath));
     UEtytl::DebugLog(FString::Printf(TEXT("UShellConfigItem::OutputLog: 目的地路径有效性[%s]"), *LexToString(bCorrectDestinationPath)));
-    UEtytl::DebugLog(FString::Printf(TEXT("UShellConfigItem::OutputLog: 进度           [%d]"), Progress));
     UEtytl::DebugLog(FString::Printf(TEXT("UShellConfigItem::OutputLog: 按钮有效性      [%s]"), *LexToString(bEntryButtonIsEnabled)));
     UEtytl::DebugLog(FString::Printf(TEXT("UShellConfigItem::OutputLog: 启动时备份      [%s]"), *LexToString(bStartBackup)));
     UEtytl::DebugLog(FString::Printf(TEXT("UShellConfigItem::OutputLog: 修改文件权限    [%s]"), *LexToString(bSetPermissions)));
     UEtytl::DebugLog(FString::Printf(TEXT("UShellConfigItem::OutputLog: 源文件总大小    [%d]"), SourceFileSizeSum));
-    UEtytl::DebugLog(FString::Printf(TEXT("UShellConfigItem::OutputLog: 当前项的索引    [%d]"), ShellConfigItemIndex));
 
     UEtytl::DebugLog(FString::Printf(TEXT("UShellConfigItem::OutputLog: SourceFileDirectoryList(源文件夹路径)")));
     for (auto& tempDirectoryEntry : SourceFileDirectoryList)

@@ -37,10 +37,6 @@ public:
 	UShellConfigItem* ShellConfigItem; //ShellConfig项
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
-	UProgressBar* ProgressBarItem;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
-	UHorizontalBox* HorizontalBoxProgressBar;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 	UButton* ButtonBackup;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, meta = (BindWidget))
 	UMultiLineEditableText* MultiLineEditableTextSourceItem;
@@ -64,13 +60,6 @@ public:
 
 public:
 
-	UFUNCTION(BlueprintCallable, Category = "Shell")
+	UFUNCTION(BlueprintCallable)
 	void OnBackupButton();
-
-	//不适合虚拟化的 UI复用
-	void OnBackupButtonIsEnabled(bool _bIsEnabled);
-
-
-	UFUNCTION(BlueprintCallable, Category = "Shell")
-	void SetProgress(float Progress);
 };

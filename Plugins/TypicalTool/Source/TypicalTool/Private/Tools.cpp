@@ -55,16 +55,18 @@ void UETypicalTool::DebugLog(int32 Key, float LogShowTime, FColor TextColor, con
 		LogShowTime = 3600 * 24; //显示 1 天
 	}
 
+	FString temp = FString::Printf(TEXT("[%s]%s"), *FDateTime::Now().ToString(), *Text);
 	if (GEngine) {
 		GEngine->AddOnScreenDebugMessage(Key, LogShowTime, TextColor, Text, bNewOnTop, TextScale);
+		
 		if (TextColor == FColor::Red) {
-			UE_LOG(LogTemp, Error, TEXT("%s"), *Text);
+			UE_LOG(LogTemp, Error, TEXT("%s"), *temp);
 		}
 		else if (TextColor == FColor::Yellow) {
-			UE_LOG(LogTemp, Warning, TEXT("%s"), *Text);
+			UE_LOG(LogTemp, Warning, TEXT("%s"), *temp);
 		}
 		else {
-			UE_LOG(LogTemp, Log, TEXT("%s"), *Text);
+			UE_LOG(LogTemp, Log, TEXT("%s"), *temp);
 		}
 	}
 	else {
@@ -75,9 +77,8 @@ void UETypicalTool::DebugLog(int32 Key, float LogShowTime, FColor TextColor, con
 		UE_LOG(LogTemp, Error, TEXT("UETypicalTool::DebugLog: ToolsPtr 初始化失败!"));
 		return;
 	}
-
-	if (!ToolsPtr.WriteTextToFile(Text)) {
-		UE_LOG(LogTemp, Error, TEXT("UETypicalTool::DebugLog: 文本保存失败[%s]!"), *Text);
+	if (!ToolsPtr.WriteTextToFile(temp)) {
+		UE_LOG(LogTemp, Error, TEXT("UETypicalTool::DebugLog: 文本保存失败[%s]!"), *temp);
 	}
 }
 
@@ -87,16 +88,18 @@ void UETypicalTool::DebugLog(const FString& Text, FColor TextColor, int32 Key, f
 		LogShowTime = 3600 * 24; //显示 1 天
 	}
 
+	FString temp = FString::Printf(TEXT("[%s]%s"), *FDateTime::Now().ToString(), *Text);
 	if (GEngine) {
 		GEngine->AddOnScreenDebugMessage(Key, LogShowTime, TextColor, Text, bNewOnTop, TextScale);
+
 		if (TextColor == FColor::Red) {
-			UE_LOG(LogTemp, Error, TEXT("%s"), *Text);
+			UE_LOG(LogTemp, Error, TEXT("%s"), *temp);
 		}
 		else if (TextColor == FColor::Yellow) {
-			UE_LOG(LogTemp, Warning, TEXT("%s"), *Text);
+			UE_LOG(LogTemp, Warning, TEXT("%s"), *temp);
 		}
 		else {
-			UE_LOG(LogTemp, Log, TEXT("%s"), *Text);
+			UE_LOG(LogTemp, Log, TEXT("%s"), *temp);
 		}
 	}
 	else {
@@ -107,9 +110,8 @@ void UETypicalTool::DebugLog(const FString& Text, FColor TextColor, int32 Key, f
 		UE_LOG(LogTemp, Error, TEXT("UETypicalTool::DebugLog: ToolsPtr 初始化失败!"));
 		return;
 	}
-
-	if (!ToolsPtr.WriteTextToFile(Text)) {
-		UE_LOG(LogTemp, Error, TEXT("UETypicalTool::DebugLog: 文本保存失败[%s]!"), *Text);
+	if (!ToolsPtr.WriteTextToFile(temp)) {
+		UE_LOG(LogTemp, Error, TEXT("UETypicalTool::DebugLog: 文本保存失败[%s]!"), *temp);
 	}
 }
 

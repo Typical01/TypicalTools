@@ -1,10 +1,10 @@
 .vs/
 
 Binaries/
+Build/
 DerivedDataCache/
 Intermediate/
 Saved/
-Build/
 Test/
 
 build/
